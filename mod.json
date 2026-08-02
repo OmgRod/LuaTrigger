@@ -11,8 +11,7 @@
 	"developer": "OmgRod",
 	"description": "Adds a Lua trigger in the editor.",
 	"dependencies": {
-		"geode.node-ids": ">=v1.23.3",
-		"smjs.object-collab": ">=v0.0.0"
+		"smjs.object-collab": "v0.1.0-alpha.4"
 	},
 	"resources": {
 		"spritesheets": {
@@ -26,9 +25,6 @@
 				"size": 24,
 				"charset": "32-126,160-255,256-383,384-591,768-879,880-1023,1024-1279,8304-8351,8352-8399,8592-8703,8704-8959,9472-9599,9600-9631,57344-63743,64256-64262"
 			}
-		},
-		"folders": [
-			"res/docs"
-		]
+		}
 	}
 }

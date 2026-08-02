@@ -52,7 +52,7 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
 
     auto fileUpload = editor_popup::CustomValueMenu::builder()
         .id("file-upload")
-        .title("Lua File")
+        .title("Upload Lua File")
         .factory([selected, previewRef, initialFilename](const Selected& /*sel*/, Popup* /*popup*/) -> CCMenu* {
             auto menu = CCMenu::create();
             menu->setContentSize({ 300.0f, 27.0f });
@@ -102,17 +102,37 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
         .build();
 
     return PopupConfig::builder()
-        .width(320)
-        .height(250)
+        .width(420)
+        .height(260)
         .gapY(20)
         .title("Lua Code Editor")
         .info(InfoPopup::builder()
             .title("Help")
             .description("This trigger lets you write <cl>Lua</c> code in GD, giving you loads of flexibility "
                 "in what you want your level to do.\n\nUpload your Lua files using the button at the bottom of "
-                "the trigger menu.\n\n<cy>For full trigger docs, click the button below!</c>")
+                "the trigger menu.\n\n<cy>For full trigger docs, click the \"Open Docs\" button to the right!</c>")
             .build())
         .menu(std::move(luaEditor))
+        .menu(editor_popup::CustomValueMenu::builder()
+            .id("utils")
+            .title("Utilities")
+            .factory([](const Selected&, Popup*) -> CCMenu* {
+                auto menu = CCMenu::create();
+                menu->setContentSize({ 300.f, 30.f });
+
+                auto button = CCMenuItemExt::createSpriteExtra(
+                    ButtonSprite::create("Open Docs"),
+                    [](CCObject*) {
+                        utils::web::openLinkInBrowser("https://luatrigger.omgrod.me/docs");
+                    }
+                );
+
+                button->setPosition({150.f, 15.f});
+                menu->addChild(button);
+
+                return menu;
+            })
+            .build())
         .menu(std::move(fileUpload))
         .triggerToggles(true)
         .build();
