@@ -16,7 +16,7 @@ std::string formatLuaArgs(sol::variadic_args args) {
             case sol::type::boolean:
                 result += arg.as<bool>() ? "true" : "false";
                 break;
-            case sol::type::nil:
+            case sol::type::lua_nil:
                 result += "nil";
                 break;
             default:
