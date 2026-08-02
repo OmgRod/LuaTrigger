@@ -1,3 +1,7 @@
+# v1.0.0-alpha.2
+
+- Updated the mod's metadata
+
 # v1.0.0-alpha.1
 
 - Added `Player.kill()` function
