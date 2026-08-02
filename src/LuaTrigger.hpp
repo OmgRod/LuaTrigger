@@ -3,6 +3,9 @@
 #include <Geode/Geode.hpp>
 #include <smjs.object-collab/include/object_collab.hpp>
 #include "interpreter/LuaManager.hpp"
+#include "nodes/FileSelectNode.hpp"
+#include "nodes/FileValueMenu.hpp"
+#include "nodes/ScrollTextArea.hpp"
 
 using namespace geode::prelude;
 using namespace object_collab::prelude;

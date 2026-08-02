@@ -1,11 +1,31 @@
 #include "LuaManager.hpp"
-#include <Geode/Geode.hpp>
-#include <cctype>
-#include <Geode/utils/async.hpp>
-#include <asp/time/sleep.hpp>
-#include <asp/time/Duration.hpp>
 
 using namespace geode::prelude;
+
+std::string formatLuaArgs(sol::variadic_args args) {
+    std::string result;
+    for (auto arg : args) {
+        switch (arg.get_type()) {
+            case sol::type::string:
+                result += arg.as<std::string>();
+                break;
+            case sol::type::number:
+                result += std::to_string(arg.as<double>());
+                break;
+            case sol::type::boolean:
+                result += arg.as<bool>() ? "true" : "false";
+                break;
+            case sol::type::nil:
+                result += "nil";
+                break;
+            default:
+                result += "<" + std::string(sol::type_name(args.lua_state(), arg.get_type())) + ">";
+                break;
+        }
+        result += "\t";
+    }
+    return result;
+}
 
 bool isKeyword(const std::string& word) {
     static const std::unordered_set<std::string> keywords = {
@@ -103,9 +123,98 @@ void moveGroupWithEasing(
     moveTrigger->triggerObject(gameLayer, -1, nullptr);
 }
 
+void rotateGroupWithEasing(
+    GJBaseGameLayer* gameLayer, 
+    int targetGroupID, 
+    int centerGroupID, 
+    int degrees, 
+    int times360, 
+    float duration, 
+    int easingType = 0, 
+    float easingRate = 2.0f,
+    bool lockObjRotation = false
+) {
+    if (!gameLayer) return;
+
+    auto rotateTrigger = static_cast<EffectGameObject*>(GameObject::createWithKey(1346));
+    if (!rotateTrigger) {
+        log::error("Rotate trigger creation failed");
+        return;
+    }
+
+    rotateTrigger->m_targetGroupID = targetGroupID;
+    rotateTrigger->m_centerGroupID = centerGroupID;
+    rotateTrigger->m_rotationDegrees = degrees;
+    rotateTrigger->m_times360 = times360;
+    rotateTrigger->m_duration = duration;
+    rotateTrigger->m_easingType = static_cast<EasingType>(easingType);
+    rotateTrigger->m_easingRate = easingRate;
+    rotateTrigger->m_lockObjectRotation = lockObjRotation;
+
+    rotateTrigger->triggerObject(gameLayer, -1, nullptr);
+}
+
+void scaleGroupWithEasing(
+    GJBaseGameLayer* gameLayer, 
+    int targetGroupID, 
+    int centerGroupID, 
+    float scaleX, 
+    float scaleY, 
+    float duration, 
+    int easingType = 0, 
+    float easingRate = 2.0f,
+    bool divByX = false,
+    bool divByY = false,
+    bool onlyMove = false,
+    bool relativeScale = false,
+    bool relativeRotation = false
+) {
+    if (!gameLayer) return;
+
+    auto scaleTrigger = static_cast<TransformTriggerGameObject*>(GameObject::createWithKey(2067));
+    if (!scaleTrigger) {
+        log::error("Scale trigger creation failed");
+        return;
+    }
+
+    scaleTrigger->m_targetGroupID = targetGroupID;
+    scaleTrigger->m_centerGroupID = centerGroupID;
+
+    scaleTrigger->m_scaleX = scaleX;
+    scaleTrigger->m_scaleY = scaleY;
+    scaleTrigger->m_duration = duration;
+
+    scaleTrigger->m_easingType = static_cast<EasingType>(easingType);
+    scaleTrigger->m_easingRate = easingRate;
+
+    scaleTrigger->m_divideX = divByX;
+    scaleTrigger->m_divideY = divByY;
+    scaleTrigger->m_onlyMove = onlyMove;
+    scaleTrigger->m_relativeScale = relativeScale;
+    scaleTrigger->m_relativeRotation = relativeRotation;
+
+    scaleTrigger->triggerObject(gameLayer, -1, nullptr);
+}
+
 LuaManager::LuaManager() {
     m_lua = std::make_unique<sol::state>();
-    m_lua->open_libraries(sol::lib::base, sol::lib::math, sol::lib::string);
+    m_lua->open_libraries( // THIS MUST BE APPROPRIATE PACKAGES ONLY! WE DONT WANT OUR USERS GETTING HACKED!
+        sol::lib::base,
+        sol::lib::math,
+        sol::lib::string,
+        sol::lib::bit32,
+        sol::lib::coroutine,
+        sol::lib::table,
+        sol::lib::utf8
+    );
+
+    m_persistentState = m_lua->create_table();
+    m_lua->globals()["state"] = m_persistentState;
+
+    GJBaseGameLayer* layer = nullptr;
+    if (auto playLayer = PlayLayer::get()) layer = playLayer;
+    else if (auto editorLayer = LevelEditorLayer::get()) layer = editorLayer;
+    if (!layer) return;
     
     sol::table playerTable = m_lua->create_named_table("Player", 
         "Player1", 1,
@@ -113,17 +222,8 @@ LuaManager::LuaManager() {
         "Both", 3
     );
 
-    playerTable["kill"] = [](sol::optional<int> playerType) {
+    playerTable["kill"] = [layer](sol::optional<int> playerType) {
         int type = playerType.value_or(1);
-        
-        GJBaseGameLayer* layer = nullptr;
-        if (auto playLayer = PlayLayer::get()) {
-            layer = playLayer;
-        } else if (auto editorLayer = LevelEditorLayer::get()) {
-            layer = editorLayer;
-        }
-
-        if (!layer) return;
 
         auto killPlayer = [&](PlayerObject* p) {
             if (p) layer->destroyPlayer(p, nullptr);
@@ -133,33 +233,143 @@ LuaManager::LuaManager() {
         if (type == 2 || type == 3) killPlayer(layer->m_player2);
     };
 
-    sol::table groupTable = m_lua->create_named_table("Group");
+    sol::table groupTable = m_lua->create_named_table("Object");
     
-    groupTable["move"] = [](int groupID, float dx, float dy, sol::optional<float> duration) {
-        log::info("Lua Group.move({}, {}, {}, {})",
+    groupTable["move"] = [layer](int groupID, float dx, float dy, sol::optional<float> duration) {
+        log::info("Lua Object.move({}, {}, {}, {})",
             groupID, dx, dy, duration.value_or(0.f)
         );
-
-        GJBaseGameLayer* layer = nullptr;
-        if (auto playLayer = PlayLayer::get()) layer = playLayer;
-        else if (auto editorLayer = LevelEditorLayer::get()) layer = editorLayer;
-        if (!layer) return;
 
         float dur = duration.value_or(0.0f);
 
         moveGroupWithEasing(layer, groupID, { dx, dy }, dur);
     };
 
+    groupTable["rotate"] = [layer](
+        int targetGroupID, 
+        int centerGroupID, 
+        int degrees, 
+        sol::optional<int> times360, 
+        sol::optional<float> duration,
+        sol::optional<int> easingType,
+        sol::optional<float> easingRate
+    ) {
+        log::info("Lua Object.rotate({}, {}, {}, {})", 
+            targetGroupID, centerGroupID, degrees, duration.value_or(0.f)
+        );
+
+        rotateGroupWithEasing(
+            layer, 
+            targetGroupID, 
+            centerGroupID, 
+            degrees, 
+            times360.value_or(0), 
+            duration.value_or(0.0f),
+            easingType.value_or(0),
+            easingRate.value_or(2.0f)
+        );
+    };
+
+    groupTable["scale"] = [layer](
+        int targetGroupID, 
+        int centerGroupID, 
+        float scaleX, 
+        sol::optional<float> scaleY, 
+        sol::optional<float> duration,
+        sol::optional<int> easingType,
+        sol::optional<float> easingRate,
+        sol::optional<sol::table> options
+    ) {
+        log::info("Lua Group.scale({}, {}, {}, {})", 
+            targetGroupID, centerGroupID, scaleX, duration.value_or(0.f)
+        );
+
+        float sy = scaleY.value_or(scaleX);
+        float dur = duration.value_or(0.0f);
+
+        bool divByX = false;
+        bool divByY = false;
+        bool onlyMove = false;
+        bool relativeScale = false;
+        bool relativeRotation = false;
+
+        if (options.has_value()) {
+            auto opts = options.value();
+            divByX = opts.get_or("divByX", false);
+            divByY = opts.get_or("divByY", false);
+            onlyMove = opts.get_or("onlyMove", false);
+            relativeScale = opts.get_or("relativeScale", false);
+            relativeRotation = opts.get_or("relativeRotation", false);
+        }
+
+        scaleGroupWithEasing(
+            layer, 
+            targetGroupID, 
+            centerGroupID, 
+            scaleX, 
+            sy, 
+            dur,
+            easingType.value_or(0),
+            easingRate.value_or(2.0f),
+            divByX,
+            divByY,
+            onlyMove,
+            relativeScale,
+            relativeRotation
+        );
+    };
+
     m_lua->set_function("wait", [](double seconds, sol::this_state s) {
         lua_pushnumber(s, seconds);
         return lua_yield(s, 1);
     });
+
+    m_lua->set_function("print", [](sol::variadic_args args) {
+        auto text = formatLuaArgs(args);
+
+        log::info("[Lua] {}", text);
+        notifapi::info(text);
+    });
+    m_lua->set_function("error", [](sol::variadic_args args) {
+        auto text = formatLuaArgs(args);
+
+        log::error("[Lua] {}", text);
+        notifapi::error(text);
+    });
+    m_lua->set_function("warn", [](sol::variadic_args args) {
+        auto text = formatLuaArgs(args);
+
+        log::warn("[Lua] {}", text);
+        notifapi::warn(text);
+    });
+
+    m_lua->set_function("clearState", [this]() {
+        m_persistentState = m_lua->create_table();
+        m_lua->globals()["state"] = m_persistentState;
+    });
+}
+
+sol::environment LuaManager::createScriptEnvironment() {
+    sol::environment env(*m_lua, sol::create);
+
+    env["state"] = m_persistentState;
+
+    auto meta = m_lua->create_table();
+    meta["__index"] = m_lua->globals();
+
+    env[sol::metatable_key] = meta;
+
+    return env;
 }
 
 void LuaManager::executeScript(const std::string& code) {
     if (!m_lua) return;
 
-    auto loaded = m_lua->load(code);
+    sol::environment env = createScriptEnvironment();
+
+    auto loaded = m_lua->load(
+        "local _ENV = ...\n" + code
+    );
 
     if (!loaded.valid()) {
         sol::error err = loaded;
@@ -167,9 +377,17 @@ void LuaManager::executeScript(const std::string& code) {
         return;
     }
 
-    sol::coroutine coroutine(loaded);
+    sol::coroutine thread(loaded);
 
-    runCoroutine(coroutine);
+    auto result = thread(env);
+
+    if (!result.valid()) {
+        sol::error err = result;
+        log::error("Lua Runtime Error: {}", err.what());
+        return;
+    }
+
+    runCoroutine(thread);
 }
 
 void LuaManager::runCoroutine(sol::coroutine coroutine) {
@@ -200,4 +418,3 @@ void LuaManager::runCoroutine(sol::coroutine coroutine) {
         );
     }
 }
-

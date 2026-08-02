@@ -11,7 +11,8 @@
 	"developer": "OmgRod",
 	"description": "Adds a Lua trigger in the editor.",
 	"dependencies": {
-		"smjs.object-collab": "v0.1.0-alpha.4"
+		"smjs.object-collab": "v0.1.0-alpha.5",
+		"miskaa.notif": ">=v1.0.4-beta.4"
 	},
 	"resources": {
 		"spritesheets": {

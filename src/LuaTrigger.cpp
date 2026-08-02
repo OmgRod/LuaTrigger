@@ -1,7 +1,4 @@
 #include "LuaTrigger.hpp"
-#include "nodes/FileSelectNode.hpp"
-#include "nodes/FileValueMenu.hpp"
-#include "nodes/ScrollTextArea.hpp"
 
 LuaTrigger::LuaTrigger(ObjectInfo* info)
     : CustomObject(info, GameObjectType::Modifier) {}
@@ -120,16 +117,37 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
                 auto menu = CCMenu::create();
                 menu->setContentSize({ 300.f, 30.f });
 
-                auto button = CCMenuItemExt::createSpriteExtra(
-                    ButtonSprite::create("Open Docs"),
+                auto docsBtn = CCMenuItemExt::createSpriteExtra(
+                    ButtonSprite::create("Open Docs", 80, true, "goldFont.fnt", "GJ_button_01.png", 30.f, 0.6f),
                     [](CCObject*) {
-                        utils::web::openLinkInBrowser("https://luatrigger.omgrod.me/docs");
+                        utils::web::openLinkInBrowser("https://gdresources.omgrod.me/lua/index");
                     }
                 );
 
-                button->setPosition({150.f, 15.f});
-                menu->addChild(button);
+                auto bugBtn = CCMenuItemExt::createSpriteExtra(
+                    ButtonSprite::create("Report Bug", 80, true, "goldFont.fnt", "GJ_button_01.png", 30.f, 0.6f),
+                    [](CCObject*) {
+                        utils::web::openLinkInBrowser("https://github.com/OmgRod/LuaTrigger/issues/new?template=bug_report.md");
+                    }
+                );
 
+                auto featureBtn = CCMenuItemExt::createSpriteExtra(
+                    ButtonSprite::create("Request Feature", 90, true, "goldFont.fnt", "GJ_button_01.png", 30.f, 0.6f),
+                    [](CCObject*) {
+                        utils::web::openLinkInBrowser("https://github.com/OmgRod/LuaTrigger/issues/new?template=feature_request.md");
+                    }
+                );
+
+                menu->addChild(docsBtn);
+                menu->addChild(bugBtn);
+                menu->addChild(featureBtn);
+
+                menu->setLayout(
+                    AxisLayout::create(Axis::Row)
+                        ->setGap(8.0f)
+                );
+
+                menu->updateLayout();
                 return menu;
             })
             .build())
