@@ -2,8 +2,6 @@
 
 #include <Geode/Geode.hpp>
 
-namespace file_value_menu {
-
 using namespace geode::prelude;
 
 class FileValueMenu {
@@ -33,5 +31,3 @@ private:
     std::string m_contents;
     bool m_loaded = false;
 };
-
-}

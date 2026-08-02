@@ -1,13 +1,13 @@
 #include "LuaTrigger.hpp"
-#include "FileSelectNode.hpp"
-#include "FileValueMenu.hpp"
-#include "ScrollTextArea.hpp"
+#include "nodes/FileSelectNode.hpp"
+#include "nodes/FileValueMenu.hpp"
+#include "nodes/ScrollTextArea.hpp"
 
-using namespace object_collab::prelude;
-using namespace geode::prelude;
+LuaTrigger::LuaTrigger(ObjectInfo* info)
+    : CustomObject(info, GameObjectType::Modifier) {}
 
-LuaTrigger* LuaTrigger::create() {
-    return new LuaTrigger();
+LuaTrigger* LuaTrigger::create(ObjectInfo* info) {
+    return new LuaTrigger(info);
 }
 
 PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
@@ -32,8 +32,11 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
             auto menu = CCMenu::create();
             menu->setContentSize({ 300.0f, 150.0f });
 
+            LuaManager luaManager;
+            std::string highlightedCode = luaManager.highlightSyntax(initialCode);
+
             auto textPreview = ScrollTextArea::create(
-                initialCode,
+                highlightedCode,
                 { 300.f, 150.f },
                 1.f,
                 "jetbrains.fnt"_spr
@@ -63,7 +66,7 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
             }
 
             select->setOnFileSelected([selected, previewRef](std::filesystem::path const& path) {
-                auto result = file_value_menu::FileValueMenu::create(path);
+                auto result = FileValueMenu::create(path);
                 if (result.isErr()) {
                     FLAlertLayer::create(
                         "Error",
@@ -115,22 +118,23 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
         .build();
 }
 
-LuaTrigger::LuaTrigger(): CustomObject({
-    CustomObject::propertyFrom(LuaTrigger::SCRIPT,   m_b64code,  std::string("")),
-    CustomObject::propertyFrom(LuaTrigger::FILENAME, m_filename, std::string("")),
-}, GameObjectType::Modifier) { }
-
 void LuaTrigger::postInit() {
     this->setHitbox({ 1, 1 });
     this->checkMod();
 }
 
-void LuaTrigger::triggerObject(GJBaseGameLayer* layer, const int uniqueID, const gd::vector<int>* remapKeys) {
-    if (m_active) {
-        std::string code = LevelTools::base64DecodeString(m_b64code);
-        m_luaManager.executeScript(code);
-        CustomObject::triggerObject(layer, m_uniqueID, remapKeys);
-    }
+void LuaTrigger::triggerObject(
+    GJBaseGameLayer* layer,
+    const int uniqueID,
+    const gd::vector<int>* remapKeys
+) {
+    if (!m_active)
+        return;
+
+    auto code = LevelTools::base64DecodeString(m_b64code);
+    m_luaManager.executeScript(code);
+
+    CustomObject::triggerObject(layer, uniqueID, remapKeys);
 }
 
 bool LuaTrigger::ignoreEditorDuration() {
@@ -145,7 +149,13 @@ $on_mod(Loaded) {
     ObjectAPI::registerObject(ObjectInfo::builder()
         .id("lua-trigger"_spr)
         .sprite("trigger.png"_spr)
-        .factory(LuaTrigger::create)
+        .construction(ComplexObject::builder()
+            .factory(LuaTrigger::create)
+            .customProperties({
+                PropertyInterface::from(LuaTrigger::SCRIPT, &LuaTrigger::m_b64code, std::string("")),
+                PropertyInterface::from(LuaTrigger::FILENAME, &LuaTrigger::m_filename, std::string("")),
+            })
+            .build())
         .editObject(LuaTrigger::getEditObjectConfig)
         .editorTab(EditorTab::Triggers)
         .build());

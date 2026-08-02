@@ -1,11 +1,5 @@
 #include "FileValueMenu.hpp"
 
-#include <fstream>
-
-namespace file_value_menu {
-
-using namespace geode::prelude;
-
 FileValueMenu::FileValueMenu(std::filesystem::path path)
     : m_path(std::move(path)) {
 }
@@ -123,6 +117,4 @@ Result<> FileValueMenu::loadFromDisk() {
 
     m_loaded = true;
     return Ok();
-}
-
 }
