@@ -13,7 +13,7 @@
 	"description": "Adds a Lua trigger in the editor.",
 	"dependencies": {
 		"geode.node-ids": ">=v1.23.3",
-		"smjs.object-collab": ">=v0.1.0",
+		"smjs.object-collab": ">=v0.0.0",
 		"alphalaneous.level-storage-api": ">=v1.0.4"
 	},
 	"resources": {
