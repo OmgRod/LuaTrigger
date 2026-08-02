@@ -1,7 +1,9 @@
 #pragma once
+
 #include <Geode/Geode.hpp>
 #include <miskaa.notif/src/includes/notif_api.hpp>
 #include <sol/sol.hpp>
+#include "Utils.hpp"
 
 class LuaManager {
 public:
