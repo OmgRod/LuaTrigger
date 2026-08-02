@@ -7,7 +7,7 @@
 	},
 	"id": "omgrod.lua-trigger",
 	"name": "Lua Trigger",
-	"version": "v1.0.0",
+	"version": "v1.0.0-alpha.1",
 	"developer": "OmgRod",
 	"description": "Adds a Lua trigger in the editor.",
 	"dependencies": {
