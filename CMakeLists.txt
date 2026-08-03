@@ -56,10 +56,6 @@ target_include_directories(lua PUBLIC
     ${lua_SOURCE_DIR}
 )
 
-target_compile_definitions(lua PRIVATE
-    "l_system(cmd)=(0)"
-)
-
 target_link_libraries(${PROJECT_NAME}
     lua
 )
