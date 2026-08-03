@@ -2,6 +2,8 @@
 
 This mod adds a fully working <cb>Lua</c> integration to your own levels, giving you more freedom in what you want to do in your levels.
 
+**<cr>WARNING: EDITOR PREVIEW ISN'T 100% SUPPORTED SO WE RECOMMEND YOU PLAYTEST THE TRIGGER THROUGH PLAYLAYER INSTEAD OF EDITOR PREVIEW MENU.</c>**
+
 ## How do you use this mod?
 
 To use this mod, go to the <cy>Triggers</c> tab in the level editor. You should see a blue trigger that says "Lua" on it. If you add it to your level and click "Edit Object", a popup will appear, showing a preview of your code and a button to upload your code to the level.

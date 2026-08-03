@@ -51,8 +51,8 @@ void scaleGroupWithEasing(GJBaseGameLayer* gameLayer, int targetGroupID, int cen
     scaleTrigger->m_targetGroupID = targetGroupID;
     scaleTrigger->m_centerGroupID = centerGroupID;
 
-    scaleTrigger->m_scaleX = scaleX;
-    scaleTrigger->m_scaleY = scaleY;
+    scaleTrigger->m_objectScaleX = scaleX;
+    scaleTrigger->m_objectScaleY = scaleY;
     scaleTrigger->m_duration = duration;
 
     scaleTrigger->m_easingType = static_cast<EasingType>(easingType);
