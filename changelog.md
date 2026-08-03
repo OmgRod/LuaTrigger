@@ -17,6 +17,7 @@
 - Added `Popup.show()` function
 - Made code more consistent and tidy
 - Add iOS support
+- Switched to a new logo
 
 ## v1.0.0-alpha.2
 
