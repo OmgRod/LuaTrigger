@@ -1,3 +1,5 @@
+-- opens popup
+
 Popup.show(
     "Hello",
     "Do you want to continue?",

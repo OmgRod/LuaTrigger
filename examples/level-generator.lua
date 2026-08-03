@@ -1,8 +1,9 @@
+-- not ready for use. code has been commented out for now
+
 local startX = 90
 local startY = 90
 
 local spacing = 30
-
 for y = 0, 9 do
     for x = 0, 9 do
 

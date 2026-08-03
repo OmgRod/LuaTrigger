@@ -1,3 +1,5 @@
+-- use group 2 object
+
 local i = 0
 
 while i < 3 do
