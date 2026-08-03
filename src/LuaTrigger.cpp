@@ -384,9 +384,7 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
 
                 std::string code = result.unwrap().getContents();
 
-                gd::string encoded = LevelTools::base64EncodeString(
-                    gd::string(code.c_str(), code.size())
-                );
+                gd::string encoded = LevelTools::base64EncodeString(gd::string(code.c_str(), code.size()));
                 std::string filename = path.filename().string();
 
                 for (auto* obj : selected) {
@@ -488,7 +486,7 @@ void LuaTrigger::triggerObject(GJBaseGameLayer* layer, const int uniqueID, const
 
     sol::environment env = createScriptEnvironment();
 
-    auto loaded = m_lua->load("local _ENV = ...\n" + code);
+    auto loaded = m_lua->load(fmt::format("local _ENV = ...\n{}", code));
     if (!loaded.valid()) {
         sol::error err = loaded;
         log::error("Lua Load Error: {}", err.what());
