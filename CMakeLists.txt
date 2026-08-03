@@ -7,9 +7,6 @@ else()
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
 endif()
 
-target_compile_options(lua PRIVATE
-    "-Dl_system\\(cmd\\)=0"
-)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 project(LuaTrigger VERSION 1.0.0)
@@ -38,6 +35,10 @@ add_library(lua STATIC ${LUA_SOURCES})
 
 target_include_directories(lua PUBLIC
     ${lua_SOURCE_DIR}
+)
+
+target_compile_options(lua PRIVATE
+    "-Dl_system\\(cmd\\)=0"
 )
 
 target_link_libraries(${PROJECT_NAME}
