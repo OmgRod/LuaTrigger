@@ -116,7 +116,7 @@ LuaManager::LuaManager() {
 
     GJBaseGameLayer* layer = nullptr;
     if (auto playLayer = PlayLayer::get()) layer = playLayer;
-    else if (auto editorLayer = LevelEditorLayer::get()) layer = editorLayer;
+    // else if (auto editorLayer = LevelEditorLayer::get()) layer = editorLayer; // no editor layer because its weird af
     if (!layer) return;
     
     sol::table playerTable = m_lua->create_named_table("Player", 

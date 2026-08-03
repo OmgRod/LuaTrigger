@@ -20,7 +20,7 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
         }
     }
 
-    auto previewRef = std::make_shared<ScrollTextArea*>(nullptr);
+    auto previewRef = std::make_shared<amber::ScrollTextArea*>(nullptr);
 
     auto luaEditor = editor_popup::CustomValueMenu::builder()
         .id("lua-preview")
@@ -32,7 +32,7 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
             LuaManager luaManager;
             std::string highlightedCode = luaManager.highlightSyntax(initialCode);
 
-            auto textPreview = ScrollTextArea::create(
+            auto textPreview = amber::ScrollTextArea::create(
                 highlightedCode,
                 { 300.f, 150.f },
                 1.f,

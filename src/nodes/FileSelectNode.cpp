@@ -47,7 +47,7 @@ void FileSelectNode::updateState() {
         m_nameLabel->setColor(ccGRAY);
         m_nameLabel->setOpacity(180);
     } else {
-        m_nameLabel->setString(m_path.filename().string().c_str());
+        m_nameLabel->setString(geode::utils::string::pathToString(m_path.filename()).c_str());
         m_nameLabel->setColor(ccWHITE);
         m_nameLabel->setOpacity(255);
     }

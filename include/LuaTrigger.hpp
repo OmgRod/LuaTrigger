@@ -5,7 +5,7 @@
 #include <interpreter/LuaManager.hpp>
 #include <nodes/FileSelectNode.hpp>
 #include <nodes/FileValueMenu.hpp>
-#include <nodes/ScrollTextArea.hpp>
+#include <fryy_55.amber/include/amber.hpp>
 
 using namespace geode::prelude;
 using namespace object_collab::prelude;
