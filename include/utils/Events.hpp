@@ -1,0 +1,8 @@
+#include <Geode/Geode.hpp>
+
+using namespace geode::prelude;
+
+class LevelResetEvent : public geode::Event<LevelResetEvent, bool()> {
+public:
+    using Event::Event;
+};

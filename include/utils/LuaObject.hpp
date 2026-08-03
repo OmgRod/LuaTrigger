@@ -1,6 +1,6 @@
 #pragma once
 
-#include <interpreter/Utils.hpp>
+#include <utils/Utils.hpp>
 
 class LuaObject {
 public:

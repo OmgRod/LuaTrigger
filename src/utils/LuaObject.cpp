@@ -1,4 +1,4 @@
-#include <interpreter/LuaObject.hpp>
+#include <utils/LuaObject.hpp>
 
 LuaObject::LuaObject(GJBaseGameLayer* layer, int objectID) : layer(layer), objectID(objectID) {
     object = GameObject::createWithKey(objectID);

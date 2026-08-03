@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.0-alpha.6
+
+- Removed `LuaManager` and moved everything from it into `LuaTrigger`
+- From above change, fixed bug with Stop triggers not working on the Lua trigger
+- Made a separate fix to stop the trigger when the player dies
+
 ## v1.0.0-alpha.5
 
 - Added amber back as a dependency

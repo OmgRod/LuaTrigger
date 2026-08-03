@@ -1,4 +1,4 @@
-#include <interpreter/Utils.hpp>
+#include <utils/Utils.hpp>
 
 void moveGroupWithEasing(GJBaseGameLayer* gameLayer, int targetGroupID, cocos2d::CCPoint offset, float duration, int easingType, float easingRate) {
     if (!gameLayer) return;
@@ -91,4 +91,47 @@ void togglePlayerMovement(GJBaseGameLayer* layer, bool enabled) {
     }
 
     trigger->triggerObject(layer, -1, nullptr);
+}
+
+std::string formatLuaArgs(sol::variadic_args args) {
+    std::string result;
+    for (auto arg : args) {
+        switch (arg.get_type()) {
+            case sol::type::string:
+                result += arg.as<std::string>();
+                break;
+            case sol::type::number:
+                result += std::to_string(arg.as<double>());
+                break;
+            case sol::type::boolean:
+                result += arg.as<bool>() ? "true" : "false";
+                break;
+            case sol::type::lua_nil:
+                result += "nil";
+                break;
+            default:
+                result += "<" + std::string(sol::type_name(args.lua_state(), arg.get_type())) + ">";
+                break;
+        }
+        result += "\t";
+    }
+    return result;
+}
+
+bool isKeyword(const std::string& word) {
+    static const std::unordered_set<std::string> keywords = {
+        "and", "break", "do", "else", "elseif", "end", "false", "for", "function", 
+        "if", "in", "local", "nil", "not", "or", "repeat", "return", "then", 
+        "true", "until", "while"
+    };
+    return keywords.find(word) != keywords.end();
+}
+
+bool isFunction(const std::string& word, const std::string& code, size_t pos) {
+    while(pos < code.size() && std::isspace(code[pos])) pos++;
+    return pos < code.size() && code[pos] == '(';
+}
+
+bool isClass(const std::string& word) {
+    return !word.empty() && std::isupper(word[0]);
 }
