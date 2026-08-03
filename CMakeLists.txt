@@ -3,10 +3,13 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "iOS" OR IOS)
     set(CMAKE_OSX_ARCHITECTURES "arm64")
-    add_definitions(-Dl_system\(cmd\)=0)
 else()
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
 endif()
+
+target_compile_options(lua PRIVATE
+    "-Dl_system\\(cmd\\)=0"
+)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 project(LuaTrigger VERSION 1.0.0)
