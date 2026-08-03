@@ -1,3 +1,9 @@
+# v1.0.0-alpha.3
+
+- Fixed utils buttons alignment
+- Added `Popup.new()` and `Popup.show()` functions
+- Made code more consistent and tidy
+
 # v1.0.0-alpha.2
 
 - Updated the mod's metadata

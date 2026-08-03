@@ -4,6 +4,8 @@
 
 using namespace geode::prelude;
 
+// Code partially taken from Geode
+
 class FileValueMenu {
 public:
     FileValueMenu() = default;
@@ -11,18 +13,10 @@ public:
 
     static Result<FileValueMenu> create(std::filesystem::path path);
 
-    [[nodiscard]] std::filesystem::path const& getPath() const;
     [[nodiscard]] std::string const& getContents() const;
-    [[nodiscard]] bool hasContents() const;
 
     Result<> setPath(std::filesystem::path path);
     Result<> reload();
-    Result<> save(std::string const& contents);
-
-    [[nodiscard]] std::string getFilename() const;
-    [[nodiscard]] std::string getExtension() const;
-    [[nodiscard]] bool exists() const;
-    [[nodiscard]] bool isDirectory() const;
 
 private:
     Result<> loadFromDisk();

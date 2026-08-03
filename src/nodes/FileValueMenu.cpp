@@ -1,8 +1,6 @@
-#include "FileValueMenu.hpp"
+#include <nodes/FileValueMenu.hpp>
 
-FileValueMenu::FileValueMenu(std::filesystem::path path)
-    : m_path(std::move(path)) {
-}
+FileValueMenu::FileValueMenu(std::filesystem::path path) : m_path(std::move(path)) { }
 
 Result<FileValueMenu> FileValueMenu::create(std::filesystem::path path) {
     auto menu = FileValueMenu(std::move(path));
@@ -13,72 +11,12 @@ Result<FileValueMenu> FileValueMenu::create(std::filesystem::path path) {
     return Ok(std::move(menu));
 }
 
-std::filesystem::path const& FileValueMenu::getPath() const {
-    return m_path;
-}
-
 std::string const& FileValueMenu::getContents() const {
     return m_contents;
 }
 
-bool FileValueMenu::hasContents() const {
-    return m_loaded;
-}
-
-Result<> FileValueMenu::setPath(std::filesystem::path path) {
-    m_path = std::move(path);
-    return reload();
-}
-
 Result<> FileValueMenu::reload() {
     return loadFromDisk();
-}
-
-Result<> FileValueMenu::save(std::string const& contents) {
-    if (m_path.empty()) {
-        return Err("No file path has been set");
-    }
-
-    std::error_code ec;
-    auto parent = m_path.parent_path();
-    if (!parent.empty()) {
-        std::filesystem::create_directories(parent, ec);
-        if (ec) {
-            return Err("Failed to create parent directories for {}: {}", m_path.string(), ec.message());
-        }
-    }
-
-    std::ofstream file(m_path, std::ios::binary | std::ios::trunc);
-    if (!file.is_open()) {
-        return Err("Failed to open {} for writing", m_path.string());
-    }
-
-    file.write(contents.data(), static_cast<std::streamsize>(contents.size()));
-    if (!file.good()) {
-        return Err("Failed to write the full file contents to {}", m_path.string());
-    }
-
-    m_contents = contents;
-    m_loaded = true;
-    return Ok();
-}
-
-std::string FileValueMenu::getFilename() const {
-    return m_path.filename().string();
-}
-
-std::string FileValueMenu::getExtension() const {
-    return m_path.extension().string();
-}
-
-bool FileValueMenu::exists() const {
-    std::error_code ec;
-    return std::filesystem::exists(m_path, ec);
-}
-
-bool FileValueMenu::isDirectory() const {
-    std::error_code ec;
-    return std::filesystem::is_directory(m_path, ec);
 }
 
 Result<> FileValueMenu::loadFromDisk() {

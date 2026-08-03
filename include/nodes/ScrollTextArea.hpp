@@ -15,22 +15,10 @@ protected:
 	~ScrollTextArea() override;
 
 public:
-	static ScrollTextArea* create(
-		std::string_view text,
-		cocos2d::CCSize const& size,
-		float fontScale = 0.75f,
-		std::string_view bmFont = "chatFont.fnt",
-		cocos2d::ccColor4B const& bgColor = { .r=0u, .g=0u, .b=0u, .a=75u }
-	);
+	static ScrollTextArea* create(std::string_view text, cocos2d::CCSize const& size, float fontScale = 0.75f, std::string_view bmFont = "chatFont.fnt", cocos2d::ccColor4B const& bgColor = { .r=0u, .g=0u, .b=0u, .a=75u });
 
 protected:
-	bool init(
-		std::string_view,
-		cocos2d::CCSize const&,
-		float,
-		std::string_view,
-		cocos2d::ccColor4B const&
-	);
+	bool init(std::string_view, cocos2d::CCSize const&, float, std::string_view, cocos2d::ccColor4B const&);
 
 public:
 	[[nodiscard]] geode::ZStringView getFont() const noexcept;

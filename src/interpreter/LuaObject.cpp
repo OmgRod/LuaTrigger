@@ -1,27 +1,16 @@
-#include "LuaObject.hpp"
+#include <interpreter/LuaObject.hpp>
 
-LuaObject::LuaObject(
-    GJBaseGameLayer* layer,
-    int objectID
-)
-    : layer(layer),
-      objectID(objectID)
-{
+LuaObject::LuaObject(GJBaseGameLayer* layer, int objectID) : layer(layer), objectID(objectID) {
     object = GameObject::createWithKey(objectID);
 }
 
 void LuaObject::addToLayer() {
-    if (!layer || !object)
-        return;
+    if (!layer || !object) return;
 
     layer->addChild(object);
 }
 
-
-void LuaObject::setPosition(
-    float x,
-    float y
-) {
+void LuaObject::setPosition(float x, float y) {
     this->x = x;
     this->y = y;
 
@@ -30,26 +19,15 @@ void LuaObject::setPosition(
     }
 }
 
-
 std::pair<float, float> LuaObject::getPosition() {
-    return {
-        x,
-        y
-    };
+    return {x, y};
 }
 
-
-void LuaObject::move(
-    float x,
-    float y,
-    float duration
-) {
+void LuaObject::move(float x, float y, float duration) {
     this->x += x;
     this->y += y;
 
-    if (!object)
-        return;
-
+    if (!object) return;
 
     if (duration > 0) {
         object->runAction(
@@ -58,19 +36,14 @@ void LuaObject::move(
                 { x, y }
             )
         );
-    }
-    else {
+    } else {
         object->setPosition(
             object->getPosition() + cocos2d::CCPoint{x, y}
         );
     }
 }
 
-
-
-void LuaObject::setRotation(
-    float rotation
-) {
+void LuaObject::setRotation(float rotation) {
     this->rotation = rotation;
 
     if (object) {
@@ -78,22 +51,14 @@ void LuaObject::setRotation(
     }
 }
 
-
 float LuaObject::getRotation() {
     return rotation;
 }
 
-
-
-void LuaObject::rotate(
-    float rotation,
-    float duration
-) {
+void LuaObject::rotate(float rotation, float duration) {
     this->rotation += rotation;
 
-    if (!object)
-        return;
-
+    if (!object) return;
 
     if (duration > 0) {
         object->runAction(
@@ -102,23 +67,16 @@ void LuaObject::rotate(
                 rotation
             )
         );
-    }
-    else {
+    } else {
         object->setRotation(
             object->getRotation() + rotation
         );
     }
 }
 
-
-
-void LuaObject::setScale(
-    float x,
-    float y
-) {
+void LuaObject::setScale(float x, float y) {
     this->scaleX = x;
     this->scaleY = y;
-
 
     if (object) {
         object->setScaleX(x);
@@ -126,29 +84,15 @@ void LuaObject::setScale(
     }
 }
 
-
-
 std::pair<float, float> LuaObject::getScale() {
-    return {
-        scaleX,
-        scaleY
-    };
+    return {scaleX, scaleY};
 }
 
-
-
-void LuaObject::scale(
-    float x,
-    float y,
-    float duration
-) {
+void LuaObject::scale(float x, float y,float duration) {
     scaleX *= x;
     scaleY *= y;
 
-
-    if (!object)
-        return;
-
+    if (!object) return;
 
     if (duration > 0) {
         object->runAction(
@@ -158,14 +102,11 @@ void LuaObject::scale(
                 scaleY
             )
         );
-    }
-    else {
+    } else {
         object->setScaleX(scaleX);
         object->setScaleY(scaleY);
     }
 }
-
-
 
 int LuaObject::getID() {
     return objectID;

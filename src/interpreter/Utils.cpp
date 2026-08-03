@@ -1,4 +1,4 @@
-#include "Utils.hpp"
+#include <interpreter/Utils.hpp>
 
 void moveGroupWithEasing(GJBaseGameLayer* gameLayer, int targetGroupID, cocos2d::CCPoint offset, float duration, int easingType, float easingRate) {
     if (!gameLayer) return;
@@ -65,4 +65,30 @@ void scaleGroupWithEasing(GJBaseGameLayer* gameLayer, int targetGroupID, int cen
     scaleTrigger->m_relativeRotation = relativeRotation;
 
     scaleTrigger->triggerObject(gameLayer, -1, nullptr);
+}
+
+void togglePlayerMovement(GJBaseGameLayer* layer, bool enabled) {
+    if (!layer) return;
+
+    auto trigger = static_cast<PlayerControlGameObject*>(GameObject::createWithKey(1932));
+    if (!trigger) {
+        log::error("Scale trigger creation failed");
+        return;
+    }
+
+    if (enabled) {
+        trigger->m_targetPlayer1 = true;
+        trigger->m_targetPlayer2 = true;
+        trigger->m_stopJump = true;
+        trigger->m_stopMove = true;
+        trigger->m_stopRotation = true;
+    } else {
+        trigger->m_targetPlayer1 = true;
+        trigger->m_targetPlayer2 = true;
+        trigger->m_stopJump = false;
+        trigger->m_stopMove = false;
+        trigger->m_stopRotation = false;
+    }
+
+    trigger->triggerObject(layer, -1, nullptr);
 }

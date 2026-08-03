@@ -1,6 +1,6 @@
 // Code from Amber - https://github.com/Fryy55/amber/blob/main/src/classes/ScrollTextArea.cpp
 
-#include "ScrollTextArea.hpp"
+#include <nodes/ScrollTextArea.hpp>
 
 using namespace geode::prelude;
 
@@ -22,14 +22,7 @@ ScrollTextArea::~ScrollTextArea() {
 	m_impl->textRenderer->release();
 }
 
-
-ScrollTextArea* ScrollTextArea::create(
-	std::string_view text,
-	CCSize const& size,
-	float fontScale,
-	std::string_view font,
-	ccColor4B const& bgColor
-) {
+ScrollTextArea* ScrollTextArea::create(std::string_view text, CCSize const& size, float fontScale, std::string_view font, ccColor4B const& bgColor) {
 	auto ret = new ScrollTextArea;
 
 	if (ret->init(text, size, fontScale, font, bgColor)) {
@@ -41,15 +34,8 @@ ScrollTextArea* ScrollTextArea::create(
 	return nullptr;
 }
 
-bool ScrollTextArea::init(
-	std::string_view text,
-	CCSize const& size,
-	float fontScale,
-	std::string_view font,
-	ccColor4B const& bgColor
-) {
-	if (!CCNode::init())
-		return false;
+bool ScrollTextArea::init(std::string_view text, CCSize const& size, float fontScale, std::string_view font, ccColor4B const& bgColor) {
+	if (!CCNode::init()) return false;
 
 	m_impl->fontScale = fontScale;
 	m_impl->font = font;
@@ -58,11 +44,8 @@ bool ScrollTextArea::init(
 	m_impl->textRenderer = TextRenderer::create();
 	m_impl->textRenderer->retain();
 
-
 	this->setContentSize(size);
 	this->setAnchorPoint({ 0.5f, 0.5f });
-
-
 
 	auto bg = NineSlice::create("square02b_001.png");
 	bg->setContentSize(size);
@@ -70,7 +53,6 @@ bool ScrollTextArea::init(
 	bg->setOpacity(bgColor.a);
 	bg->setID("background");
 	this->addChildAtPosition(bg, Anchor::Center);
-
 
 	auto scrollLayer = m_impl->scrollLayer = ScrollLayer::create(m_impl->size);
 
@@ -83,13 +65,10 @@ bool ScrollTextArea::init(
 	this->addChildAtPosition(scrollLayer, Anchor::Center);
 	scrollLayer->setPosition(s_totalScrollLayerOffset / 2.f, 0.f);
 
-
-
 	this->updateLabel();
 
 	return true;
 }
-
 
 ZStringView ScrollTextArea::getFont() const noexcept {
 	return m_impl->font;
@@ -98,10 +77,7 @@ ZStringView ScrollTextArea::getFont() const noexcept {
 void ScrollTextArea::setFont(std::string_view bmFont, bool updateLabel) {
 	m_impl->font = bmFont;
 
-	if (updateLabel)
-		this->updateLabel();
-
-	return;
+	if (updateLabel) this->updateLabel();
 }
 
 float ScrollTextArea::getFontScale() const noexcept {
@@ -111,10 +87,7 @@ float ScrollTextArea::getFontScale() const noexcept {
 void ScrollTextArea::setFontScale(float fontScale, bool updateLabel) {
 	m_impl->fontScale = fontScale;
 
-	if (updateLabel)
-		this->updateLabel();
-
-	return;
+	if (updateLabel) this->updateLabel();
 }
 
 ZStringView ScrollTextArea::getText() const noexcept {
@@ -124,12 +97,8 @@ ZStringView ScrollTextArea::getText() const noexcept {
 void ScrollTextArea::setText(std::string_view text, bool updateLabel) {
 	m_impl->text = text;
 
-	if (updateLabel)
-		this->updateLabel();
-
-	return;
+	if (updateLabel) this->updateLabel();
 }
-
 
 void ScrollTextArea::updateLabel() {
 	auto textRenderer = m_impl->textRenderer;
@@ -150,7 +119,6 @@ void ScrollTextArea::updateLabel() {
 
 	textRenderer->end();
 
-
 	// this is just straight up stolen impl but it works flawlessly so yeah
 	if (contentMenu->getContentSize().height > m_impl->size.height) {
 		scrollLayer->m_contentLayer->setContentSize(
@@ -163,8 +131,6 @@ void ScrollTextArea::updateLabel() {
 	}
 
 	scrollLayer->scrollToTop();
-
-	return;
 }
 
 bool ScrollTextArea::parseAndRenderText() {

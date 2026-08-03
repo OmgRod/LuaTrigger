@@ -2,10 +2,10 @@
 
 #include <Geode/Geode.hpp>
 #include <smjs.object-collab/include/object_collab.hpp>
-#include "interpreter/LuaManager.hpp"
-#include "nodes/FileSelectNode.hpp"
-#include "nodes/FileValueMenu.hpp"
-#include "nodes/ScrollTextArea.hpp"
+#include <interpreter/LuaManager.hpp>
+#include <nodes/FileSelectNode.hpp>
+#include <nodes/FileValueMenu.hpp>
+#include <nodes/ScrollTextArea.hpp>
 
 using namespace geode::prelude;
 using namespace object_collab::prelude;
@@ -21,11 +21,7 @@ public:
     LuaTrigger(ObjectInfo* info);
 
     void postInit() override;
-    void triggerObject(
-        GJBaseGameLayer* layer,
-        const int uniqueID,
-        const gd::vector<int>* remapKeys
-    ) override;
+    void triggerObject(GJBaseGameLayer* layer, const int uniqueID, const gd::vector<int>* remapKeys) override;
 
     bool ignoreEditorDuration() override;
     void checkMod();

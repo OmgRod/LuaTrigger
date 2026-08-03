@@ -1,4 +1,4 @@
-#include "FileSelectNode.hpp"
+#include <nodes/FileSelectNode.hpp>
 
 bool FileSelectNode::init(float width) {
     if (!CCNode::init()) return false;
@@ -24,9 +24,7 @@ bool FileSelectNode::init(float width) {
     btnSpr->setScale(0.6f);
 
     m_selectBtnSpr = CCSprite::createWithSpriteFrameName("GJ_plus2Btn_001.png");
-    m_selectBtn = CCMenuItemSpriteExtra::create(
-        btnSpr, this, menu_selector(FileSelectNode::onPickFile)
-    );
+    m_selectBtn = CCMenuItemSpriteExtra::create(btnSpr, this, menu_selector(FileSelectNode::onPickFile));
 
     auto buttonMenu = CCMenu::create();
     buttonMenu->setPosition({ 0.f, 0.f });

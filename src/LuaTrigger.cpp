@@ -1,4 +1,4 @@
-#include "LuaTrigger.hpp"
+#include <LuaTrigger.hpp>
 
 LuaTrigger::LuaTrigger(ObjectInfo* info)
     : CustomObject(info, GameObjectType::Modifier) {}
@@ -115,24 +115,24 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
             .title("Utilities")
             .factory([](const Selected&, Popup*) -> CCMenu* {
                 auto menu = CCMenu::create();
-                menu->setContentSize({ 300.f, 30.f });
+                menu->setContentSize({ 300.f, 90.f });
 
                 auto docsBtn = CCMenuItemExt::createSpriteExtra(
-                    ButtonSprite::create("Open Docs", 80, true, "goldFont.fnt", "GJ_button_01.png", 30.f, 0.6f),
+                    ButtonSprite::create("Open Docs", 180, true, "goldFont.fnt", "GJ_button_01.png", 26.f, 0.6f),
                     [](CCObject*) {
                         utils::web::openLinkInBrowser("https://gdresources.omgrod.me/lua/index");
                     }
                 );
 
                 auto bugBtn = CCMenuItemExt::createSpriteExtra(
-                    ButtonSprite::create("Report Bug", 80, true, "goldFont.fnt", "GJ_button_01.png", 30.f, 0.6f),
+                    ButtonSprite::create("Report Bug", 180, true, "goldFont.fnt", "GJ_button_01.png", 26.f, 0.6f),
                     [](CCObject*) {
                         utils::web::openLinkInBrowser("https://github.com/OmgRod/LuaTrigger/issues/new?template=bug_report.md");
                     }
                 );
 
                 auto featureBtn = CCMenuItemExt::createSpriteExtra(
-                    ButtonSprite::create("Request Feature", 90, true, "goldFont.fnt", "GJ_button_01.png", 30.f, 0.6f),
+                    ButtonSprite::create("Request Feature", 180, true, "goldFont.fnt", "GJ_button_01.png", 26.f, 0.6f),
                     [](CCObject*) {
                         utils::web::openLinkInBrowser("https://github.com/OmgRod/LuaTrigger/issues/new?template=feature_request.md");
                     }
@@ -143,8 +143,9 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
                 menu->addChild(featureBtn);
 
                 menu->setLayout(
-                    AxisLayout::create(Axis::Row)
-                        ->setGap(8.0f)
+                    AxisLayout::create(Axis::Column)
+                        ->setGap(5.0f)
+                        ->setAxisReverse(true)
                 );
 
                 menu->updateLayout();

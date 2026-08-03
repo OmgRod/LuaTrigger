@@ -1,2 +1,6 @@
-This file can include information on how users can support you (Ko-Fi or Patreon for example).
-You can also delete this file if you don't need it.
+### Thank you for downloading my mod!
+
+Please feel free to support me by:
+
+- Tipping on [Ko-fi](https://ko-fi.com/omgrod)
+- Watching my [YouTube videos](https://www.youtube.com/@OmgRodYT/) (they take a while to make)
