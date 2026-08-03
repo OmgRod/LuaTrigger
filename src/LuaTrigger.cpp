@@ -48,7 +48,7 @@ inline void LuaTrigger::runCoroutine(std::shared_ptr<sol::coroutine> coroutine, 
                         if (this->m_disabled || !this->m_lua || token != this->m_executionToken) {
                             return;
                         }
-                        this->runCoroutine(coroutine, env, token);
+                        this->runCoroutine(coroutine, env, token); 
                     }
                 ),
                 nullptr
@@ -532,7 +532,8 @@ void LuaTrigger::stopLua() {
     this->stopAllActions();
 
     if (m_lua) {
-        m_lua.reset();
+        m_persistentState = m_lua->create_table();
+        m_lua->globals()["state"] = m_persistentState;
     }
 }
 
