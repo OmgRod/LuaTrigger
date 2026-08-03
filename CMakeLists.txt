@@ -31,6 +31,10 @@ file(GLOB LUA_SOURCES CONFIGURE_DEPENDS
 
 add_library(lua STATIC ${LUA_SOURCES})
 
+if ("${CMAKE_SYSTEM_NAME}" STREQUAL "iOS" OR IOS)
+    target_compile_definitions(lua PRIVATE LUA_USE_IOS)
+endif()
+
 target_include_directories(lua PUBLIC
     third_party/lua
 )
