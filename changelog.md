@@ -3,6 +3,7 @@
 - Fixed utils buttons alignment
 - Added `Popup.show()` functions
 - Made code more consistent and tidy
+- Add iOS support
 
 # v1.0.0-alpha.2
 
