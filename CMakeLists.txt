@@ -25,35 +25,14 @@ add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
 setup_geode_mod(${PROJECT_NAME})
 
-CPMAddPackage("gh:lua/lua#v5.4.8")
-
 file(GLOB LUA_SOURCES CONFIGURE_DEPENDS
-    ${lua_SOURCE_DIR}/*.c
+    third_party/lua/*.c
 )
-
-if ("${CMAKE_SYSTEM_NAME}" STREQUAL "iOS" OR IOS)
-    file(READ "${lua_SOURCE_DIR}/loslib.c" LOSLIB_CONTENT)
-
-    string(REPLACE
-        "#define l_system(cmd)   system(cmd)"
-        "#define l_system(cmd)   (0)"
-        LOSLIB_CONTENT
-        "${LOSLIB_CONTENT}"
-    )
-
-    file(WRITE
-        "${CMAKE_CURRENT_BINARY_DIR}/loslib_ios.c"
-        "${LOSLIB_CONTENT}"
-    )
-
-    list(REMOVE_ITEM LUA_SOURCES "${lua_SOURCE_DIR}/loslib.c")
-    list(APPEND LUA_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/loslib_ios.c")
-endif()
 
 add_library(lua STATIC ${LUA_SOURCES})
 
 target_include_directories(lua PUBLIC
-    ${lua_SOURCE_DIR}
+    third_party/lua
 )
 
 target_link_libraries(${PROJECT_NAME}
