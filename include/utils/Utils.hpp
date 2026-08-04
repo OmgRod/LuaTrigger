@@ -14,3 +14,25 @@ std::string formatLuaArgs(sol::variadic_args args);
 bool isKeyword(const std::string& word);
 bool isFunction(const std::string& word, const std::string& code, size_t pos);
 bool isClass(const std::string& word);
+
+class DialogCleanupNode : public cocos2d::CCNode {
+public:
+    GJBaseGameLayer* m_layer;
+
+    static DialogCleanupNode* create(GJBaseGameLayer* layer) {
+        auto ret = new DialogCleanupNode();
+        if (ret && ret->init()) {
+            ret->m_layer = layer;
+            ret->autorelease();
+            return ret;
+        }
+        CC_SAFE_DELETE(ret);
+        return nullptr;
+    }
+
+    ~DialogCleanupNode() override {
+        if (m_layer) {
+            togglePlayerMovement(m_layer, false);
+        }
+    }
+};

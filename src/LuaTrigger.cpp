@@ -1,4 +1,5 @@
 #include <LuaTrigger.hpp>
+#include <utils/Utils.hpp>
 
 sol::environment LuaTrigger::createScriptEnvironment() {
     sol::environment env(*m_lua, sol::create);
@@ -143,6 +144,69 @@ inline void LuaTrigger::setupLuaInterpreter() {
             doShow.value_or(true),
             cancelledByEscape.value_or(false)
         );
+    };
+
+    sol::table dialogTable = m_lua->create_named_table("Dialog");
+
+    dialogTable["show"] = [layer](sol::table dialogList, sol::optional<sol::table> options) {
+        auto array = cocos2d::CCArray::create();
+
+        for (size_t i = 1; i <= dialogList.size(); ++i) {
+            sol::optional<sol::table> entryOpt = dialogList[i];
+            if (!entryOpt.has_value()) continue;
+
+            auto entry = entryOpt.value();
+
+            std::string speaker = entry.get_or("speaker", std::string(""));
+            std::string text    = entry.get_or("text", std::string(""));
+            int avatar          = entry.get_or("avatar", 1);
+            float scale         = entry.get_or("scale", 1.0f);
+            bool unskippable    = entry.get_or("unskippable", false);
+
+            cocos2d::ccColor3B color = { 255, 255, 255 };
+            if (sol::optional<sol::table> colorTbl = entry["color"]) {
+                color.r = colorTbl->get_or(1, 255);
+                color.g = colorTbl->get_or(2, 255);
+                color.b = colorTbl->get_or(3, 255);
+            }
+
+            auto obj = DialogObject::create(
+                speaker.c_str(),
+                text.c_str(),
+                avatar,
+                scale,
+                unskippable,
+                color
+            );
+
+            if (obj) {
+                array->addObject(obj);
+            }
+        }
+
+        if (array->count() == 0) return;
+
+        int bgType = 2;
+        bool animateSide = true;
+
+        if (options.has_value()) {
+            bgType = options->get_or("bgType", 2);
+            animateSide = options->get_or("animateSide", true);
+        }
+
+        togglePlayerMovement(layer, true);
+
+        auto dialogLayer = DialogLayer::createWithObjects(array, bgType);
+        if (!dialogLayer) return;
+
+        if (animateSide) {
+            dialogLayer->animateInRandomSide();
+        }
+
+        auto cleanupNode = DialogCleanupNode::create(layer);
+        dialogLayer->addChild(cleanupNode);
+
+        dialogLayer->addToMainScene();
     };
 
     sol::table groupTable = m_lua->create_named_table("Object");
@@ -546,7 +610,7 @@ void LuaTrigger::resumeLua() {
 }
 
 void LuaTrigger::resetLuaState() {
-    log::info("[LuaTrigger] Level reset event received! Resetting trigger state...");
+    log::info("Level reset event received! Resetting trigger state...");
 
     m_disabled = false;
     m_executionToken++;
