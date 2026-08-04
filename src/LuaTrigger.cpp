@@ -211,14 +211,12 @@ inline void LuaTrigger::setupLuaInterpreter() {
 
     sol::table groupTable = m_lua->create_named_table("Object");
     
-    groupTable["move"] = [layer](int groupID, float dx, float dy, sol::optional<float> duration) {
+    groupTable["move"] = [layer](int groupID, float dx, float dy, sol::optional<float> duration, sol::optional<int> easingType, sol::optional<float> easingRate) {
         log::info("Lua Object.move({}, {}, {}, {})",
             groupID, dx, dy, duration.value_or(0.f)
         );
 
-        float dur = duration.value_or(0.0f);
-
-        moveGroupWithEasing(layer, groupID, { dx, dy }, dur);
+        moveGroupWithEasing(layer, groupID, { dx, dy }, duration.value_or(0.0f), easingType.value_or(0), easingRate.value_or(2.0f));
     };
 
     groupTable["rotate"] = [layer](int targetGroupID, int centerGroupID, int degrees, sol::optional<int> times360, sol::optional<float> duration, sol::optional<int> easingType, sol::optional<float> easingRate) {

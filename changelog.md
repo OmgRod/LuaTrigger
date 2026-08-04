@@ -6,6 +6,7 @@
 - From above change, fixed bug with Stop triggers not working on the Lua trigger
 - Made a separate fix to stop the trigger when the player dies
 - Added `Dialog.show()` function
+- Added `easingType` and `easingRate` to move command
 
 ## v1.0.0-alpha.5
 
