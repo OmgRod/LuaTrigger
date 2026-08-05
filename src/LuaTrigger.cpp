@@ -380,7 +380,7 @@ std::string LuaTrigger::highlightSyntax(const std::string& code) {
 }
 
 PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
-    std::string initialCode = "Upload a .lua file to see the preview here...";
+    std::string initialCode = "print(\"Upload a .lua file to see the preview here...\")";
     std::string initialFilename = "";
 
     if (!selected.empty()) {

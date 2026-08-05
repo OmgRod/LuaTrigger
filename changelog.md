@@ -7,6 +7,9 @@
 - Made a separate fix to stop the trigger when the player dies
 - Added `Dialog.show()` function
 - Added `easingType` and `easingRate` to move command
+- Fixed the syntax highlighter's bugs:
+  - Not highlighting as soon as the file is uploaded
+  - Stuff being highlighted despite being commented out
 
 ## v1.0.0-alpha.5
 
