@@ -10,6 +10,7 @@
 - Fixed the syntax highlighter's bugs:
   - Not highlighting as soon as the file is uploaded
   - Stuff being highlighted despite being commented out
+- Added "Example Scripts" popup
 
 ## v1.0.0-alpha.5
 

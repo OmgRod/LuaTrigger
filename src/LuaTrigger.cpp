@@ -1,5 +1,6 @@
 #include <LuaTrigger.hpp>
 #include <utils/Utils.hpp>
+#include <nodes/ExamplesPopup.hpp>
 
 sol::environment LuaTrigger::createScriptEnvironment() {
     sol::environment env(*m_lua, sol::create);
@@ -329,24 +330,54 @@ LuaTrigger* LuaTrigger::create(ObjectInfo* info) {
 std::string LuaTrigger::highlightSyntax(const std::string& code) {
     std::string result;
     size_t i = 0;
-    while(i < code.size()) {
-        if (code[i] == '"' || code[i] == '\'') {
-            char quote = code[i];
-            result += fmt::format("<c#FFFACD>{}", quote);
-            i++;
-            while(i < code.size() && code[i] != quote) {
+
+    while (i < code.size()) {
+        if (i + 1 < code.size() && code[i] == '-' && code[i + 1] == '-') {
+            result += "<c#808080>";
+            
+            while (i < code.size() && code[i] != '\n' && code[i] != '\r') {
                 result += code[i];
                 i++;
             }
-            if(i < code.size()) { result += code[i]; i++; }
+            
             result += "</c>";
             continue;
         }
 
-        if (std::isalpha(code[i]) || code[i] == '_') {
+        if (code[i] == '"' || code[i] == '\'') {
+            char quote = code[i];
+            result += fmt::format("<c#FFFACD>{}", quote);
+            i++;
+
+            while (i < code.size()) {
+                if (code[i] == '\\' && i + 1 < code.size()) {
+                    result += code[i];
+                    result += code[i + 1];
+                    i += 2;
+                    continue;
+                }
+
+                if (code[i] == quote) {
+                    result += code[i];
+                    i++;
+                    break;
+                }
+
+                if (code[i] == '\n' || code[i] == '\r') {
+                    break;
+                }
+
+                result += code[i];
+                i++;
+            }
+
+            result += "</c>";
+            continue;
+        }
+
+        if (std::isalpha(static_cast<unsigned char>(code[i])) || code[i] == '_') {
             std::string word;
-            size_t start = i;
-            while(i < code.size() && (std::isalnum(code[i]) || code[i] == '_')) {
+            while (i < code.size() && (std::isalnum(static_cast<unsigned char>(code[i])) || code[i] == '_')) {
                 word += code[i];
                 i++;
             }
@@ -363,9 +394,9 @@ std::string LuaTrigger::highlightSyntax(const std::string& code) {
             continue;
         }
 
-        if (std::isdigit(code[i])) {
+        if (std::isdigit(static_cast<unsigned char>(code[i]))) {
             std::string num;
-            while(i < code.size() && (std::isdigit(code[i]) || code[i] == '.')) {
+            while (i < code.size() && (std::isdigit(static_cast<unsigned char>(code[i])) || code[i] == '.')) {
                 num += code[i];
                 i++;
             }
@@ -376,6 +407,7 @@ std::string LuaTrigger::highlightSyntax(const std::string& code) {
         result += code[i];
         i++;
     }
+
     return result;
 }
 
@@ -383,13 +415,16 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
     std::string initialCode = "print(\"Upload a .lua file to see the preview here...\")";
     std::string initialFilename = "";
 
+    LuaTrigger* triggerInstance = nullptr;
     if (!selected.empty()) {
-        if (auto* trig = geode::cast::typeinfo_cast<LuaTrigger*>(selected[0])) {
-            if (!trig->m_b64code.empty()) {
-                initialCode = LevelTools::base64DecodeString(trig->m_b64code);
-            }
-            initialFilename = trig->m_filename;
+        triggerInstance = geode::cast::typeinfo_cast<LuaTrigger*>(selected[0]);
+    }
+
+    if (triggerInstance) {
+        if (!triggerInstance->m_b64code.empty()) {
+            initialCode = LevelTools::base64DecodeString(triggerInstance->m_b64code);
         }
+        initialFilename = triggerInstance->m_filename;
     }
 
     auto previewRef = std::make_shared<amber::ScrollTextArea*>(nullptr);
@@ -454,11 +489,11 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
                         trig->m_b64code  = std::string(encoded.c_str(), encoded.size());
                         trig->m_filename = filename;
                         trig->checkMod();
-                    }
-                }
 
-                if (*previewRef) {
-                    (*previewRef)->setText(code);
+                        if (*previewRef) {
+                            (*previewRef)->setText(trig->highlightSyntax(code));
+                        }
+                    }
                 }
             });
 
@@ -482,10 +517,7 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
         .menu(editor_popup::CustomValueMenu::builder()
             .id("utils")
             .title("Utilities")
-            .factory([](const Selected&, Popup*) -> CCMenu* {
-                auto menu = CCMenu::create();
-                menu->setContentSize({ 300.f, 90.f });
-
+            .factory([triggerInstance, previewRef](const Selected&, Popup*) -> CCMenu* {
                 auto docsBtn = CCMenuItemExt::createSpriteExtra(
                     ButtonSprite::create("Open Docs", 180, true, "goldFont.fnt", "GJ_button_01.png", 26.f, 0.6f),
                     [](CCObject*) {
@@ -507,10 +539,26 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
                     }
                 );
 
+                auto examplesBtn = CCMenuItemExt::createSpriteExtra(
+                    ButtonSprite::create("View Examples", 180, true, "goldFont.fnt", "GJ_button_01.png", 26.f, 0.6f),
+                    [triggerInstance, previewRef](CCObject*) {
+                        if (triggerInstance) {
+                            ExamplesPopup::create(triggerInstance, [triggerInstance, previewRef](const std::string& newCode) {
+                                if (*previewRef) {
+                                    (*previewRef)->setText(triggerInstance->highlightSyntax(newCode));
+                                }
+                            })->show();
+                        }
+                    }
+                );
+
+                auto menu = CCMenu::create();
+                menu->setContentSize({ 300.f, 150.f });
+
                 menu->addChild(docsBtn);
                 menu->addChild(bugBtn);
                 menu->addChild(featureBtn);
-
+                menu->addChild(examplesBtn);
                 menu->setLayout(
                     AxisLayout::create(Axis::Column)
                         ->setGap(5.0f)

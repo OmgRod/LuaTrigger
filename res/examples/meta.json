@@ -1,0 +1,46 @@
+{
+    "examples": [
+        {
+            "name": "Death Diamond",
+            "description": "An implementation of the `Object.move()` and `Player.kill()` functions.",
+            "path": "death-diamond.lua",
+            "locked": false
+        },
+        {
+            "name": "Dialog",
+            "description": "An implementation of the `Dialog` class.",
+            "path": "dialog.lua",
+            "locked": false
+        },
+        {
+            "name": "Level Generator",
+            "description": "An implementation of the `Object.new()` function. CURRENTLY UNAVAILABLE!",
+            "path": "level-generator.lua",
+            "locked": true
+        },
+        {
+            "name": "Popup",
+            "description": "An implementation of the `Popup` class.",
+            "path": "popup.lua",
+            "locked": false
+        },
+        {
+            "name": "Rotating Spike",
+            "description": "An implementation of the `Object.rotate()` function.",
+            "path": "rotate.lua",
+            "locked": false
+        },
+        {
+            "name": "Scale",
+            "description": "An implementation of the `Object.scale()` function.",
+            "path": "scale.lua",
+            "locked": false
+        },
+        {
+            "name": "Test Persistent Vars",
+            "description": "A debug script for persistent variables. To be used by the mod's developers.",
+            "path": "test-persistent-vars.lua",
+            "locked": false
+        }
+    ]
+}
