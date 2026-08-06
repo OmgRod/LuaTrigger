@@ -720,6 +720,9 @@ void LuaInterpreter::bindEngineAPI(GJBaseGameLayer* layer) {
 
     itemTable["get"] = [layer](int type, sol::optional<int> id) -> double {
         int targetId = id.value_or(0);
+        if (type == 1 && layer->m_effectManager) {
+            return static_cast<double>(layer->m_effectManager->countForItem(targetId));
+        }
         return layer->getItemValue(type, targetId);
     };
 
@@ -728,22 +731,19 @@ void LuaInterpreter::bindEngineAPI(GJBaseGameLayer* layer) {
         double diff = targetValue - currentValue;
         if (diff == 0) return;
 
-        auto pickupTrigger = static_cast<EffectGameObject*>(GameObject::createWithKey(1817));
+        auto pickupTrigger = static_cast<CountTriggerGameObject*>(GameObject::createWithKey(1817));
         if (!pickupTrigger) {
             log::error("Pickup trigger creation failed");
             return;
         }
 
         pickupTrigger->m_itemID = itemID;
-        if (diff < 0) {
-            pickupTrigger->m_subtractCount = true;
-            pickupTrigger->m_collectiblePoints = static_cast<int>(std::abs(diff));
-        } else {
-            pickupTrigger->m_subtractCount = false;
-            pickupTrigger->m_collectiblePoints = static_cast<int>(diff);
-        }
+        pickupTrigger->m_pickupCount = static_cast<int>(std::abs(diff));
+        pickupTrigger->m_subtractCount = (diff < 0);
+        pickupTrigger->m_isOverride = false;
+        pickupTrigger->m_pickupTriggerMode = 0;
 
-        layer->pickupItem(pickupTrigger);
+        layer->addPickupTrigger(pickupTrigger);
     };
 }
 
