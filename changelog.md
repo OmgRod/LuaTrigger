@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.0-alpha.7
+
+- Fixed large Android build size
+
 ## v1.0.0-alpha.6
 
 - Removed `LuaManager` and moved everything from it into `LuaTrigger`
