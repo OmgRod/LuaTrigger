@@ -1,7 +1,10 @@
 #include <ConditionLuaTrigger.hpp>
 
 ConditionLuaTrigger::ConditionLuaTrigger(ObjectInfo* info)
-    : CustomObject(info, GameObjectType::Modifier) {}
+    : CustomObject(info, ObjectTraits::builder()
+        .gameObjectType(GameObjectType::Modifier)
+        .ignoreEditorDuration(true)
+        .build()) {}
 
 ConditionLuaTrigger* ConditionLuaTrigger::create(ObjectInfo* info) {
     return new ConditionLuaTrigger(info);
@@ -120,10 +123,6 @@ void ConditionLuaTrigger::triggerObject(GJBaseGameLayer* layer, const int unique
     }
 
     CustomObject::triggerObject(layer, uniqueID, remapKeys);
-}
-
-bool ConditionLuaTrigger::ignoreEditorDuration() {
-    return true;
 }
 
 $on_mod(Loaded) {

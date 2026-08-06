@@ -30,7 +30,6 @@ public:
     void postInit() override;
     void triggerObject(GJBaseGameLayer* layer, const int uniqueID, const gd::vector<int>* remapKeys) override;
 
-    bool ignoreEditorDuration() override;
 
     void setupResetListener();
     void resetLuaState();

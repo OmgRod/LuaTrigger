@@ -2,7 +2,10 @@
 #include <utils/Utils.hpp>
 #include <nodes/ExamplesPopup.hpp>
 
-ExecuteLuaTrigger::ExecuteLuaTrigger(ObjectInfo* info) : CustomObject(info, GameObjectType::Modifier) {}
+ExecuteLuaTrigger::ExecuteLuaTrigger(ObjectInfo* info) : CustomObject(info, ObjectTraits::builder()
+    .gameObjectType(GameObjectType::Modifier)
+    .ignoreEditorDuration(true)
+    .build()) {}
 
 ExecuteLuaTrigger* ExecuteLuaTrigger::create(ObjectInfo* info) {
     return new ExecuteLuaTrigger(info);
@@ -271,10 +274,6 @@ void ExecuteLuaTrigger::triggerObject(GJBaseGameLayer* layer, const int uniqueID
     }
 
     CustomObject::triggerObject(layer, uniqueID, remapKeys);
-}
-
-bool ExecuteLuaTrigger::ignoreEditorDuration() {
-    return true;
 }
 
 void ExecuteLuaTrigger::checkMod() {

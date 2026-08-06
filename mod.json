@@ -12,7 +12,7 @@
 	"developer": "OmgRod",
 	"description": "Adds a Lua trigger in the editor.",
 	"dependencies": {
-		"smjs.object-collab": ">=v0.2.0-beta.1",
+		"smjs.object-collab": ">=v0.4.0-beta.1",
 		"miskaa.notif": ">=v1.0.4-beta.4",
 		"fryy_55.amber": ">=v2.0.1"
 	},
