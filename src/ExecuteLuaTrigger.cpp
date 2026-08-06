@@ -321,9 +321,6 @@ void ExecuteLuaTrigger::resumeLua() {
 void ExecuteLuaTrigger::resetLuaState() {
     log::info("Level reset event received! Resetting trigger state...");
     this->stopAllActions();
-    // The shared interpreter for this layer is reset once per layer, not once
-    // per trigger, so individual triggers just stop their own actions here.
-    // The actual state reset is handled by the layer's shared interpreter.
     if (auto* pl = PlayLayer::get()) {
         if (auto interp = LuaInterpreter::forLayer(pl)) interp->resetState();
     }

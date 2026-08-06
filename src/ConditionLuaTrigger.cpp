@@ -69,6 +69,12 @@ PopupOptions ConditionLuaTrigger::getEditObjectConfig(const Selected& selected) 
                 gd::string encoded = LevelTools::base64EncodeString(gd::string(value.c_str(), value.size()));
                 std::string enc(encoded.c_str(), encoded.size());
                 applyValueToSelected(sel, &ConditionLuaTrigger::m_b64code, enc);
+                
+                for (auto* obj : selected) {
+                    if (auto* t = geode::cast::typeinfo_cast<ConditionLuaTrigger*>(obj)) {
+                        t->checkMod();
+                    }
+                }
             })
             .currentValue([selected](const Selected& sel, geode::Popup*) -> std::string {
                 std::string enc = getCommonValueOrDefault(sel, &ConditionLuaTrigger::m_b64code);
@@ -82,7 +88,12 @@ PopupOptions ConditionLuaTrigger::getEditObjectConfig(const Selected& selected) 
 
 void ConditionLuaTrigger::postInit() {
     this->setHitbox({ 1, 1 });
+    this->checkMod();
     this->setupResetListener();
+}
+
+void ConditionLuaTrigger::checkMod() {
+    m_active = !m_b64code.empty();
 }
 
 void ConditionLuaTrigger::triggerObject(GJBaseGameLayer* layer, const int uniqueID, const gd::vector<int>* remapKeys) {
@@ -92,9 +103,11 @@ void ConditionLuaTrigger::triggerObject(GJBaseGameLayer* layer, const int unique
     int targetGroup = m_falseGroup;
 
     if (!m_b64code.empty()) {
-        std::string expr = LevelTools::base64DecodeString(m_b64code);
-        auto result = interp->evaluateExpression<bool>(expr);
+        std::string rawExpr = LevelTools::base64DecodeString(m_b64code);
+        
+        std::string wrappedExpr = "not not (" + rawExpr + ")";
 
+        auto result = interp->evaluateExpression<bool>(wrappedExpr);
         if (result.has_value() && result.value()) {
             targetGroup = m_trueGroup;
         }
@@ -131,10 +144,7 @@ $on_mod(Loaded) {
 }
 
 void ConditionLuaTrigger::resetLuaState() {
-    log::info("[ConditionLuaTrigger] Level reset - clearing interpreter state.");
-    if (auto* pl = PlayLayer::get()) {
-        if (auto interp = LuaInterpreter::forLayer(pl)) interp->resetState();
-    }
+    this->stopAllActions();
 }
 
 void ConditionLuaTrigger::setupResetListener() {
