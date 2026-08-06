@@ -2,63 +2,6 @@
 #include <utils/Utils.hpp>
 #include <nodes/ExamplesPopup.hpp>
 
-sol::environment ExecuteLuaTrigger::createScriptEnvironment() {
-    sol::environment env(*m_lua, sol::create);
-
-    env["state"] = m_persistentState;
-
-    auto meta = m_lua->create_table();
-    meta["__index"] = m_lua->globals();
-
-    env[sol::metatable_key] = meta;
-
-    return env;
-}
-
-inline void ExecuteLuaTrigger::runCoroutine(std::shared_ptr<sol::coroutine> coroutine, sol::environment env, uint32_t token) {
-    if (m_disabled || !m_lua || !coroutine->runnable() || token != m_executionToken) {
-        return;
-    }
-
-    auto result = (*coroutine)(env);
-
-    if (!result.valid()) {
-        sol::error err = result;
-        log::error("Lua Coroutine Error: {}", err.what());
-        return;
-    }
-
-    if (m_disabled || !m_lua || !coroutine->runnable() || token != m_executionToken) {
-        return;
-    }
-
-    if (result.return_count() > 0) {
-        float seconds = result.get<float>(0);
-
-        cocos2d::CCNode* targetNode = PlayLayer::get();
-        if (!targetNode) {
-            targetNode = cocos2d::CCDirector::sharedDirector()->getRunningScene();
-        }
-
-        if (!targetNode) return;
-
-        targetNode->runAction(
-            cocos2d::CCSequence::create(
-                cocos2d::CCDelayTime::create(seconds),
-                CallFuncExt::create(
-                    [this, coroutine, env, token]() mutable {
-                        if (this->m_disabled || !this->m_lua || token != this->m_executionToken) {
-                            return;
-                        }
-                        this->runCoroutine(coroutine, env, token); 
-                    }
-                ),
-                nullptr
-            )
-        );
-    }
-}
-
 ExecuteLuaTrigger::ExecuteLuaTrigger(ObjectInfo* info) : CustomObject(info, GameObjectType::Modifier) {}
 
 ExecuteLuaTrigger* ExecuteLuaTrigger::create(ObjectInfo* info) {
@@ -319,11 +262,12 @@ void ExecuteLuaTrigger::postInit() {
 }
 
 void ExecuteLuaTrigger::triggerObject(GJBaseGameLayer* layer, const int uniqueID, const gd::vector<int>* remapKeys) {
-    interpreter.init(layer);
+    auto interp = LuaInterpreter::forLayer(layer);
+    if (!interp) return;
 
-    if (!this->m_b64code.empty()) {
-        std::string rawLuaCode = LevelTools::base64DecodeString(this->m_b64code);
-        interpreter.runString(rawLuaCode);
+    if (!m_b64code.empty()) {
+        std::string rawLuaCode = LevelTools::base64DecodeString(m_b64code);
+        interp->runString(rawLuaCode);
     }
 
     CustomObject::triggerObject(layer, uniqueID, remapKeys);
@@ -354,38 +298,34 @@ $on_mod(Loaded) {
 }
 
 void ExecuteLuaTrigger::stopLua() {
-    m_disabled = true;
-    m_executionToken++;
-
     this->stopAllActions();
-
-    if (m_lua) {
-        m_persistentState = m_lua->create_table();
-        m_lua->globals()["state"] = m_persistentState;
+    if (auto* pl = PlayLayer::get()) {
+        if (auto interp = LuaInterpreter::forLayer(pl)) interp->stop();
     }
 }
 
 void ExecuteLuaTrigger::pauseLua() {
-    m_disabled = true;
     this->pauseSchedulerAndActions();
+    if (auto* pl = PlayLayer::get()) {
+        if (auto interp = LuaInterpreter::forLayer(pl)) interp->pause();
+    }
 }
 
 void ExecuteLuaTrigger::resumeLua() {
-    m_disabled = false;
     this->resumeSchedulerAndActions();
+    if (auto* pl = PlayLayer::get()) {
+        if (auto interp = LuaInterpreter::forLayer(pl)) interp->resume();
+    }
 }
 
 void ExecuteLuaTrigger::resetLuaState() {
     log::info("Level reset event received! Resetting trigger state...");
-
-    m_disabled = false;
-    m_executionToken++;
-
     this->stopAllActions();
-
-    if (m_lua) {
-        m_persistentState = m_lua->create_table();
-        m_lua->globals()["state"] = m_persistentState;
+    // The shared interpreter for this layer is reset once per layer, not once
+    // per trigger, so individual triggers just stop their own actions here.
+    // The actual state reset is handled by the layer's shared interpreter.
+    if (auto* pl = PlayLayer::get()) {
+        if (auto interp = LuaInterpreter::forLayer(pl)) interp->resetState();
     }
 }
 

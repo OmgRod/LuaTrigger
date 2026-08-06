@@ -2,6 +2,7 @@
 #include <Geode/modify/GJBaseGameLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <ExecuteLuaTrigger.hpp>
+#include <LuaInterpreter.hpp>
 #include <utils/Utils.hpp>
 
 using namespace geode::prelude;
@@ -33,6 +34,11 @@ class $modify(MyGameLayer, GJBaseGameLayer) {
                 }
             }
         }
+    }
+
+    void onExit() {
+        LuaInterpreter::cleanupLayer(this);
+        GJBaseGameLayer::onExit();
     }
 };
 

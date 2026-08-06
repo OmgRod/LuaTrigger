@@ -11,6 +11,9 @@
   - Not highlighting as soon as the file is uploaded
   - Stuff being highlighted despite being commented out
 - Added "Example Scripts" popup
+- Added Conditional Lua Trigger
+- Added `Item.get()` and `Item.set()` functions
+- Added loads of new `Player`-related functions
 
 ## v1.0.0-alpha.5
 

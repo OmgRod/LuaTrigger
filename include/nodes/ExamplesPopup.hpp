@@ -1,4 +1,5 @@
 #include <Geode/Geode.hpp>
+#include <ExecuteLuaTrigger.hpp>
 
 using namespace geode::prelude;
 

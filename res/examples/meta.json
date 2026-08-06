@@ -41,6 +41,12 @@
             "description": "An implementation of the `Object.new()` function. CURRENTLY UNAVAILABLE!",
             "path": "level-generator.lua",
             "locked": true
+        },
+        {
+            "name": "Item Manipulation",
+            "description": "An implementation of the `Item.get()` and `Item.set()` functions.",
+            "path": "item-manipulation.lua",
+            "locked": false
         }
     ]
 }
