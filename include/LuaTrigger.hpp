@@ -9,6 +9,7 @@
 #include <sol/sol.hpp>
 #include <utils/Utils.hpp>
 #include <utils/Events.hpp>
+#include <LuaInterpreter.hpp>
 
 using namespace geode::prelude;
 using namespace object_collab::prelude;
@@ -17,6 +18,8 @@ class LuaTrigger : public object_collab::CustomObject<EffectGameObject> {
 public:
     static constexpr uint32_t SCRIPT   = 140;
     static constexpr uint32_t FILENAME = 141;
+
+    LuaInterpreter interpreter;
 
     static LuaTrigger* create(ObjectInfo* info);
     static object_collab::PopupOptions getEditObjectConfig(const object_collab::Selected& selected);
