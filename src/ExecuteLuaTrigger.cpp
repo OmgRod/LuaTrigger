@@ -1,4 +1,4 @@
-#include <LuaTrigger.hpp>
+#include <ExecuteLuaTrigger.hpp>
 #include <utils/Utils.hpp>
 #include <nodes/ExamplesPopup.hpp>
 
@@ -244,12 +244,12 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
         .width(420)
         .height(260)
         .gapY(20)
-        .title("Lua Code Editor")
+        .title("Execute Lua Code")
         .info(InfoPopup::builder()
             .title("Help")
-            .description("This trigger lets you write <cl>Lua</c> code in GD, giving you loads of flexibility "
-                "in what you want your level to do.\n\nUpload your Lua files using the button at the bottom of "
-                "the trigger menu.\n\n<cy>For full trigger docs, click the \"Open Docs\" button to the right!</c>")
+            .description("This trigger lets you execute <cg>sandboxed</c> <cl>Lua</c> code in GD, giving you loads of flexibility "
+                "in what you want your level to do.\n\nUpload your Lua files using the button at the bottom-left of "
+                "the trigger menu.\n\n<cy>For full trigger docs, click the \"Open Docs\" button</c> and <cd>for examples, click the \"View Examples\" button!</c>")
             .build())
         .menu(std::move(luaEditor))
         .menu(editor_popup::CustomValueMenu::builder()

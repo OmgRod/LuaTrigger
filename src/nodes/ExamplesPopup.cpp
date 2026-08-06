@@ -1,4 +1,4 @@
-#include <LuaTrigger.hpp>
+#include <ExecuteLuaTrigger.hpp>
 #include <nodes/ExamplesPopup.hpp>
 
 bool ExamplesPopup::init(LuaTrigger* trigger, std::function<void(const std::string&)> onCodeSelected) {
