@@ -2,7 +2,7 @@
 #include <utils/Utils.hpp>
 #include <nodes/ExamplesPopup.hpp>
 
-sol::environment LuaTrigger::createScriptEnvironment() {
+sol::environment ExecuteLuaTrigger::createScriptEnvironment() {
     sol::environment env(*m_lua, sol::create);
 
     env["state"] = m_persistentState;
@@ -15,7 +15,7 @@ sol::environment LuaTrigger::createScriptEnvironment() {
     return env;
 }
 
-inline void LuaTrigger::runCoroutine(std::shared_ptr<sol::coroutine> coroutine, sol::environment env, uint32_t token) {
+inline void ExecuteLuaTrigger::runCoroutine(std::shared_ptr<sol::coroutine> coroutine, sol::environment env, uint32_t token) {
     if (m_disabled || !m_lua || !coroutine->runnable() || token != m_executionToken) {
         return;
     }
@@ -59,13 +59,13 @@ inline void LuaTrigger::runCoroutine(std::shared_ptr<sol::coroutine> coroutine, 
     }
 }
 
-LuaTrigger::LuaTrigger(ObjectInfo* info) : CustomObject(info, GameObjectType::Modifier) {}
+ExecuteLuaTrigger::ExecuteLuaTrigger(ObjectInfo* info) : CustomObject(info, GameObjectType::Modifier) {}
 
-LuaTrigger* LuaTrigger::create(ObjectInfo* info) {
-    return new LuaTrigger(info);
+ExecuteLuaTrigger* ExecuteLuaTrigger::create(ObjectInfo* info) {
+    return new ExecuteLuaTrigger(info);
 }
 
-std::string LuaTrigger::highlightSyntax(const std::string& code) {
+std::string ExecuteLuaTrigger::highlightSyntax(const std::string& code) {
     std::string result;
     size_t i = 0;
 
@@ -149,13 +149,13 @@ std::string LuaTrigger::highlightSyntax(const std::string& code) {
     return result;
 }
 
-PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
+PopupOptions ExecuteLuaTrigger::getEditObjectConfig(const Selected& selected) {
     std::string initialCode = "print(\"Upload a .lua file to see the preview here...\")";
     std::string initialFilename = "";
 
-    LuaTrigger* triggerInstance = nullptr;
+    ExecuteLuaTrigger* triggerInstance = nullptr;
     if (!selected.empty()) {
-        triggerInstance = geode::cast::typeinfo_cast<LuaTrigger*>(selected[0]);
+        triggerInstance = geode::cast::typeinfo_cast<ExecuteLuaTrigger*>(selected[0]);
     }
 
     if (triggerInstance) {
@@ -223,7 +223,7 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
                 std::string filename = path.filename().string();
 
                 for (auto* obj : selected) {
-                    if (auto* trig = geode::cast::typeinfo_cast<LuaTrigger*>(obj)) {
+                    if (auto* trig = geode::cast::typeinfo_cast<ExecuteLuaTrigger*>(obj)) {
                         trig->m_b64code  = std::string(encoded.c_str(), encoded.size());
                         trig->m_filename = filename;
                         trig->checkMod();
@@ -312,13 +312,13 @@ PopupOptions LuaTrigger::getEditObjectConfig(const Selected& selected) {
         .build();
 }
 
-void LuaTrigger::postInit() {
+void ExecuteLuaTrigger::postInit() {
     this->setHitbox({ 1, 1 });
     this->checkMod();
     this->setupResetListener();
 }
 
-void LuaTrigger::triggerObject(GJBaseGameLayer* layer, const int uniqueID, const gd::vector<int>* remapKeys) {
+void ExecuteLuaTrigger::triggerObject(GJBaseGameLayer* layer, const int uniqueID, const gd::vector<int>* remapKeys) {
     interpreter.init(layer);
 
     if (!this->m_b64code.empty()) {
@@ -329,11 +329,11 @@ void LuaTrigger::triggerObject(GJBaseGameLayer* layer, const int uniqueID, const
     CustomObject::triggerObject(layer, uniqueID, remapKeys);
 }
 
-bool LuaTrigger::ignoreEditorDuration() {
+bool ExecuteLuaTrigger::ignoreEditorDuration() {
     return true;
 }
 
-void LuaTrigger::checkMod() {
+void ExecuteLuaTrigger::checkMod() {
     m_active = !m_b64code.empty();
 }
 
@@ -342,18 +342,18 @@ $on_mod(Loaded) {
         .id("lua-trigger"_spr)
         .sprite("execute.png"_spr)
         .construction(ComplexObject::builder()
-            .factory(LuaTrigger::create)
+            .factory(ExecuteLuaTrigger::create)
             .customProperties({
-                PropertyInterface::from(LuaTrigger::SCRIPT, &LuaTrigger::m_b64code, std::string("")),
-                PropertyInterface::from(LuaTrigger::FILENAME, &LuaTrigger::m_filename, std::string("")),
+                PropertyInterface::from(ExecuteLuaTrigger::SCRIPT, &ExecuteLuaTrigger::m_b64code, std::string("")),
+                PropertyInterface::from(ExecuteLuaTrigger::FILENAME, &ExecuteLuaTrigger::m_filename, std::string("")),
             })
             .build())
-        .editObject(LuaTrigger::getEditObjectConfig)
+        .editObject(ExecuteLuaTrigger::getEditObjectConfig)
         .editorTab(EditorTab::Triggers)
         .build());
 }
 
-void LuaTrigger::stopLua() {
+void ExecuteLuaTrigger::stopLua() {
     m_disabled = true;
     m_executionToken++;
 
@@ -365,17 +365,17 @@ void LuaTrigger::stopLua() {
     }
 }
 
-void LuaTrigger::pauseLua() {
+void ExecuteLuaTrigger::pauseLua() {
     m_disabled = true;
     this->pauseSchedulerAndActions();
 }
 
-void LuaTrigger::resumeLua() {
+void ExecuteLuaTrigger::resumeLua() {
     m_disabled = false;
     this->resumeSchedulerAndActions();
 }
 
-void LuaTrigger::resetLuaState() {
+void ExecuteLuaTrigger::resetLuaState() {
     log::info("Level reset event received! Resetting trigger state...");
 
     m_disabled = false;
@@ -389,7 +389,7 @@ void LuaTrigger::resetLuaState() {
     }
 }
 
-void LuaTrigger::setupResetListener() {
+void ExecuteLuaTrigger::setupResetListener() {
     m_resetListener = LevelResetEvent().listen([this]() {
         this->resetLuaState();
         return true;

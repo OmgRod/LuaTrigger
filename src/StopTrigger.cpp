@@ -16,7 +16,7 @@ class $modify(MyGameLayer, GJBaseGameLayer) {
         if (!groupObjects) return;
 
         for (auto* obj : CCArrayExt<CCObject*>(groupObjects)) {
-            if (auto* luaTrigger = typeinfo_cast<LuaTrigger*>(obj)) {
+            if (auto* luaTrigger = typeinfo_cast<ExecuteLuaTrigger*>(obj)) {
                 log::info("[StopTriggerHook] Control command {} received for group {}", static_cast<int>(command), groupID);
 
                 if (command == GJActionCommand::Stop) {

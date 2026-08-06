@@ -1,7 +1,7 @@
 #include <ExecuteLuaTrigger.hpp>
 #include <nodes/ExamplesPopup.hpp>
 
-bool ExamplesPopup::init(LuaTrigger* trigger, std::function<void(const std::string&)> onCodeSelected) {
+bool ExamplesPopup::init(ExecuteLuaTrigger* trigger, std::function<void(const std::string&)> onCodeSelected) {
     if (!Popup::init(300.f, 220.f)) return false;
 
     this->m_trigger = trigger;
@@ -74,7 +74,7 @@ bool ExamplesPopup::init(LuaTrigger* trigger, std::function<void(const std::stri
     return true;
 }
 
-ExamplesPopup* ExamplesPopup::create(LuaTrigger* trigger, std::function<void(const std::string&)> onCodeSelected) {
+ExamplesPopup* ExamplesPopup::create(ExecuteLuaTrigger* trigger, std::function<void(const std::string&)> onCodeSelected) {
     auto ret = new ExamplesPopup();
 
     if (ret && ret->init(trigger, onCodeSelected)) {
@@ -86,7 +86,7 @@ ExamplesPopup* ExamplesPopup::create(LuaTrigger* trigger, std::function<void(con
     return nullptr;
 }
 
-bool ExampleCell::init(LuaTrigger* trigger, ExamplesPopup* popup, ExampleScript* script, std::function<void(const std::string&)> onCodeSelected) {
+bool ExampleCell::init(ExecuteLuaTrigger* trigger, ExamplesPopup* popup, ExampleScript* script, std::function<void(const std::string&)> onCodeSelected) {
     if (!CCNode::init()) return false;
 
     auto bg = CCScale9Sprite::create("GJ_square01.png", { 0.f, 0.f, 80.f, 80.f });
@@ -174,7 +174,7 @@ bool ExampleCell::init(LuaTrigger* trigger, ExamplesPopup* popup, ExampleScript*
     return true;
 }
 
-ExampleCell* ExampleCell::create(LuaTrigger* trigger, ExamplesPopup* popup, ExampleScript* script, std::function<void(const std::string&)> onCodeSelected) {
+ExampleCell* ExampleCell::create(ExecuteLuaTrigger* trigger, ExamplesPopup* popup, ExampleScript* script, std::function<void(const std::string&)> onCodeSelected) {
     auto ret = new ExampleCell();
 
     if (ret && ret->init(trigger, popup, script, onCodeSelected)) {

@@ -14,17 +14,17 @@
 using namespace geode::prelude;
 using namespace object_collab::prelude;
 
-class LuaTrigger : public object_collab::CustomObject<EffectGameObject> {
+class ExecuteLuaTrigger : public object_collab::CustomObject<EffectGameObject> {
 public:
     static constexpr uint32_t SCRIPT   = 140;
     static constexpr uint32_t FILENAME = 141;
 
     LuaInterpreter interpreter;
 
-    static LuaTrigger* create(ObjectInfo* info);
+    static ExecuteLuaTrigger* create(ObjectInfo* info);
     static object_collab::PopupOptions getEditObjectConfig(const object_collab::Selected& selected);
 
-    LuaTrigger(ObjectInfo* info);
+    ExecuteLuaTrigger(ObjectInfo* info);
 
     void postInit() override;
     void triggerObject(GJBaseGameLayer* layer, const int uniqueID, const gd::vector<int>* remapKeys) override;
