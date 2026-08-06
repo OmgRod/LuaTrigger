@@ -85,8 +85,26 @@ PopupOptions ConditionLuaTrigger::getEditObjectConfig(const Selected& selected) 
                 return std::string(LevelTools::base64DecodeString(enc).c_str());
             })
             .build())
+        .menu(ToggleMenu::builder()
+            .id("ignore-timeout")
+            .title("Ignore Timeout")
+            .onValue([selected](bool value, const Selected& sel, geode::Popup*) {
+                applyValueToSelected(sel, &ConditionLuaTrigger::m_ignoreTimeout, value);
+            })
+            .currentValue([selected](const Selected& sel, geode::Popup*) -> bool {
+                return getCommonValueOrDefault(sel, &ConditionLuaTrigger::m_ignoreTimeout);
+            })
+            .build())
         .triggerToggles(true)
         .build();
+}
+
+ConditionLuaTrigger::~ConditionLuaTrigger() {
+    if (auto* pl = PlayLayer::get()) {
+        LuaInterpreter::cleanupLayer(pl);
+    } else if (auto* g = GJBaseGameLayer::get()) {
+        LuaInterpreter::cleanupLayer(g);
+    }
 }
 
 void ConditionLuaTrigger::postInit() {
@@ -110,7 +128,7 @@ void ConditionLuaTrigger::triggerObject(GJBaseGameLayer* layer, const int unique
         
         std::string wrappedExpr = "not not (" + rawExpr + ")";
 
-        auto result = interp->evaluateExpression<bool>(wrappedExpr);
+        auto result = interp->evaluateExpression<bool>(wrappedExpr, m_ignoreTimeout);
         if (result.has_value() && result.value()) {
             targetGroup = m_trueGroup;
         }
@@ -132,9 +150,10 @@ $on_mod(Loaded) {
         .construction(ComplexObject::builder()
             .factory(ConditionLuaTrigger::create)
             .customProperties({
-                PropertyInterface::from(ConditionLuaTrigger::SCRIPT,      &ConditionLuaTrigger::m_b64code,   std::string("")),
-                PropertyInterface::from(ConditionLuaTrigger::TRUE_GROUP,  &ConditionLuaTrigger::m_trueGroup,  0),
-                PropertyInterface::from(ConditionLuaTrigger::FALSE_GROUP, &ConditionLuaTrigger::m_falseGroup, 0),
+                PropertyInterface::from(ConditionLuaTrigger::SCRIPT,         &ConditionLuaTrigger::m_b64code,       std::string("")),
+                PropertyInterface::from(ConditionLuaTrigger::TRUE_GROUP,     &ConditionLuaTrigger::m_trueGroup,     0),
+                PropertyInterface::from(ConditionLuaTrigger::FALSE_GROUP,    &ConditionLuaTrigger::m_falseGroup,    0),
+                PropertyInterface::from(ConditionLuaTrigger::IGNORE_TIMEOUT, &ConditionLuaTrigger::m_ignoreTimeout, false),
             })
             .build())
         .editObject(ConditionLuaTrigger::getEditObjectConfig)

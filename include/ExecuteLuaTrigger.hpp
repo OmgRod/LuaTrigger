@@ -15,13 +15,15 @@ using namespace object_collab::prelude;
 
 class ExecuteLuaTrigger : public object_collab::CustomObject<EffectGameObject> {
 public:
-    static constexpr uint32_t SCRIPT   = 140;
-    static constexpr uint32_t FILENAME = 141;
+    static constexpr uint32_t SCRIPT         = 140;
+    static constexpr uint32_t FILENAME       = 141;
+    static constexpr uint32_t IGNORE_TIMEOUT = 144;
 
     static ExecuteLuaTrigger* create(ObjectInfo* info);
     static object_collab::PopupOptions getEditObjectConfig(const object_collab::Selected& selected);
 
     ExecuteLuaTrigger(ObjectInfo* info);
+    ~ExecuteLuaTrigger() override;
 
     void postInit() override;
     void triggerObject(GJBaseGameLayer* layer, const int uniqueID, const gd::vector<int>* remapKeys) override;
@@ -36,6 +38,7 @@ public:
 
     std::string m_b64code;
     std::string m_filename;
+    bool m_ignoreTimeout = false;
 
     bool m_active = false;
 

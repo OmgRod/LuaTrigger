@@ -254,6 +254,16 @@ PopupOptions ExecuteLuaTrigger::getEditObjectConfig(const Selected& selected) {
             })
             .build())
         .menu(std::move(fileUpload))
+        .menu(ToggleMenu::builder()
+            .id("ignore-timeout")
+            .title("Ignore Timeout")
+            .onValue([selected](bool value, const Selected& sel, geode::Popup*) {
+                applyValueToSelected(sel, &ExecuteLuaTrigger::m_ignoreTimeout, value);
+            })
+            .currentValue([selected](const Selected& sel, geode::Popup*) -> bool {
+                return getCommonValueOrDefault(sel, &ExecuteLuaTrigger::m_ignoreTimeout);
+            })
+            .build())
         .triggerToggles(true)
         .build();
 }
@@ -264,13 +274,21 @@ void ExecuteLuaTrigger::postInit() {
     this->setupResetListener();
 }
 
+ExecuteLuaTrigger::~ExecuteLuaTrigger() {
+    if (auto* pl = PlayLayer::get()) {
+        LuaInterpreter::cleanupLayer(pl);
+    } else if (auto* g = GJBaseGameLayer::get()) {
+        LuaInterpreter::cleanupLayer(g);
+    }
+}
+
 void ExecuteLuaTrigger::triggerObject(GJBaseGameLayer* layer, const int uniqueID, const gd::vector<int>* remapKeys) {
     auto interp = LuaInterpreter::forLayer(layer);
     if (!interp) return;
 
     if (!m_b64code.empty()) {
         std::string rawLuaCode = LevelTools::base64DecodeString(m_b64code);
-        interp->runString(rawLuaCode);
+        interp->runString(rawLuaCode, m_ignoreTimeout);
     }
 
     CustomObject::triggerObject(layer, uniqueID, remapKeys);
@@ -287,8 +305,9 @@ $on_mod(Loaded) {
         .construction(ComplexObject::builder()
             .factory(ExecuteLuaTrigger::create)
             .customProperties({
-                PropertyInterface::from(ExecuteLuaTrigger::SCRIPT, &ExecuteLuaTrigger::m_b64code, std::string("")),
-                PropertyInterface::from(ExecuteLuaTrigger::FILENAME, &ExecuteLuaTrigger::m_filename, std::string("")),
+                PropertyInterface::from(ExecuteLuaTrigger::SCRIPT,         &ExecuteLuaTrigger::m_b64code,       std::string("")),
+                PropertyInterface::from(ExecuteLuaTrigger::FILENAME,       &ExecuteLuaTrigger::m_filename,     std::string("")),
+                PropertyInterface::from(ExecuteLuaTrigger::IGNORE_TIMEOUT, &ExecuteLuaTrigger::m_ignoreTimeout, false),
             })
             .build())
         .editObject(ExecuteLuaTrigger::getEditObjectConfig)

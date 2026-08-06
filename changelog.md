@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.0-alpha.8
+
+- Added infinite loop and timeout protection
+- From above change, added "Ignore Timeout" toggle in both triggers
+
 ## v1.0.0-alpha.7
 
 - Fixed large Android build size

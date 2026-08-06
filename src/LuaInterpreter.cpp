@@ -93,16 +93,36 @@ sol::environment LuaInterpreter::createScriptEnvironment() {
     return env;
 }
 
-void LuaInterpreter::runCoroutine(std::shared_ptr<sol::coroutine> coroutine, sol::environment env, uint32_t token) {
+void LuaInterpreter::runCoroutine(std::shared_ptr<sol::coroutine> coroutine, sol::environment env, uint32_t token, bool ignoreTimeout) {
     if (m_disabled || !m_lua || !coroutine->runnable() || token != m_executionToken) {
         return;
     }
 
+    lua_State* L = coroutine->lua_state();
+    if (L && !ignoreTimeout) {
+        lua_sethook(L, [](lua_State* L, lua_Debug* ar) {
+            int* count = static_cast<int*>(lua_getextraspace(L));
+            if (count) {
+                *count += 1000;
+                if (*count > 100000) {
+                    luaL_error(L, "Script execution limit exceeded (possible infinite loop)");
+                }
+            }
+        }, LUA_MASKCOUNT, 1000);
+        int* countPtr = static_cast<int*>(lua_getextraspace(L));
+        if (countPtr) *countPtr = 0;
+    }
+
     auto result = (*coroutine)(env);
+
+    if (L && !ignoreTimeout) {
+        lua_sethook(L, nullptr, 0, 0);
+    }
 
     if (!result.valid()) {
         sol::error err = result;
         log::error("Lua Coroutine Error: {}", err.what());
+        notifapi::error(fmt::format("Lua Error: {}", err.what()));
         return;
     }
 
@@ -122,11 +142,11 @@ void LuaInterpreter::runCoroutine(std::shared_ptr<sol::coroutine> coroutine, sol
             cocos2d::CCSequence::create(
                 cocos2d::CCDelayTime::create(seconds),
                 CallFuncExt::create(
-                    [this, coroutine, env, token]() mutable {
+                    [this, coroutine, env, token, ignoreTimeout]() mutable {
                         if (m_disabled || !m_lua || token != m_executionToken) {
                             return;
                         }
-                        runCoroutine(coroutine, env, token);
+                        runCoroutine(coroutine, env, token, ignoreTimeout);
                     }
                 ),
                 nullptr
@@ -135,7 +155,7 @@ void LuaInterpreter::runCoroutine(std::shared_ptr<sol::coroutine> coroutine, sol
     }
 }
 
-bool LuaInterpreter::runString(const std::string& code) {
+bool LuaInterpreter::runString(const std::string& code, bool ignoreTimeout) {
     if (!m_lua) return false;
 
     m_disabled = false;
@@ -155,7 +175,7 @@ bool LuaInterpreter::runString(const std::string& code) {
     auto coro = std::make_shared<sol::coroutine>(fn);
     uint32_t token = m_executionToken;
 
-    runCoroutine(coro, env, token);
+    runCoroutine(coro, env, token, ignoreTimeout);
     return true;
 }
 

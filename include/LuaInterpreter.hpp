@@ -10,22 +10,17 @@ public:
     LuaInterpreter();
     ~LuaInterpreter() = default;
 
-    /// Returns the shared LuaInterpreter for the given GJBaseGameLayer.
-    /// All triggers on the same layer share one interpreter (and therefore
-    /// one persistent `state` table) through this registry.
     static std::shared_ptr<LuaInterpreter> forLayer(GJBaseGameLayer* layer);
 
-    /// Initialises (or reuses) the shared Lua state for the given layer.
-    /// Safe to call multiple times — subsequent calls are no-ops.
     void init(GJBaseGameLayer* layer);
 
-    bool runString(const std::string& code);
+    bool runString(const std::string& code, bool ignoreTimeout = false);
 
     template <typename T>
-    std::optional<T> evaluateExpression(const std::string& expression);
+    std::optional<T> evaluateExpression(const std::string& expression, bool ignoreTimeout = false);
 
     sol::environment createScriptEnvironment();
-    void runCoroutine(std::shared_ptr<sol::coroutine> coroutine, sol::environment env, uint32_t token);
+    void runCoroutine(std::shared_ptr<sol::coroutine> coroutine, sol::environment env, uint32_t token, bool ignoreTimeout = false);
 
     void stop();
     void pause();
@@ -34,35 +29,50 @@ public:
 
     sol::state& getState() { return *m_lua; }
 
-    /// Call when a GJBaseGameLayer is being destroyed to free its shared Lua state.
     static void cleanupLayer(GJBaseGameLayer* layer);
 
 private:
     void bindEngineAPI(GJBaseGameLayer* layer);
     static std::string formatLuaArgs(sol::variadic_args args);
 
-    // The actual Lua VM — shared across all triggers on the same layer.
     std::shared_ptr<sol::state> m_lua;
     sol::table m_persistentState;
 
     GJBaseGameLayer* m_layer = nullptr;
     bool m_initialized = false;
 
-    // Per-interpreter (but now per-layer): controls coroutine execution.
     bool m_disabled = false;
     uint32_t m_executionToken = 0;
 
-    // Global registry: one LuaInterpreter per active GJBaseGameLayer.
     static std::unordered_map<GJBaseGameLayer*, std::shared_ptr<LuaInterpreter>> s_registry;
 };
 
 template <typename T>
-std::optional<T> LuaInterpreter::evaluateExpression(const std::string& expression) {
+std::optional<T> LuaInterpreter::evaluateExpression(const std::string& expression, bool ignoreTimeout) {
     if (!m_lua) return std::nullopt;
+
+    lua_State* L = m_lua->lua_state();
+    if (L && !ignoreTimeout) {
+        lua_sethook(L, [](lua_State* L, lua_Debug*) {
+            int* count = static_cast<int*>(lua_getextraspace(L));
+            if (count) {
+                *count += 1000;
+                if (*count > 100000) {
+                    luaL_error(L, "Script execution limit exceeded (possible infinite loop)");
+                }
+            }
+        }, LUA_MASKCOUNT, 1000);
+        int* countPtr = static_cast<int*>(lua_getextraspace(L));
+        if (countPtr) *countPtr = 0;
+    }
 
     auto result = m_lua->script("return (" + expression + ")", [](lua_State*, sol::protected_function_result pfr) {
         return pfr;
     });
+
+    if (L && !ignoreTimeout) {
+        lua_sethook(L, nullptr, 0, 0);
+    }
 
     if (result.valid()) {
         return result.template get<T>();
