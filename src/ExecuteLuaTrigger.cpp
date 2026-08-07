@@ -246,21 +246,28 @@ PopupOptions ExecuteLuaTrigger::getEditObjectConfig(const Selected& selected) {
                 );
 
                 auto tipOfTheDayBtn = CCMenuItemExt::createSpriteExtra(
-                    ButtonSprite::create("Random Tip", 180, true, "goldFont.fnt", "GJ_button_01.png", 26.f, 0.6f),
+                    ButtonSprite::create("Useful Tips"),
                     [](CCObject*) {
-                        std::vector<std::string> tips = {
-                            "Use <cy>`state`</c> to use persistent variables, e.g. <cl>`state.value = 123`</c>.\nThe values of <cp>these variables will persist across attempts</c> (but will <cr>reset</c> once the level is <cf>exited</c>).",
-                            "Use <cy>`clearState()`</c> to clear all persistent variables.",
-                            "Use <cr>`Player.kill()`</c> to kill the player.",
-                            "Use <cg>`Popup.show()`</c> to show a GD popup.",
+                        static std::vector<std::string> tips = {
+                            "Use <cy>state</c> to use persistent variables, e.g. <cl>`state.value = 123`</c>.\nThe values of <cp>these variables will persist across attempts</c> (but will <cr>reset</c> once the level is <cf>exited</c>).",
+                            "Use <cy>clearState()</c> to clear all persistent variables.",
+                            "Use <cr>Player.kill()</c> to kill the player.",
+                            "Use <cg>Popup.show()</c> to show a GD popup.",
+                            "Press <cl>Shift+T</c> to open the <cg>Debug Console</c>.",
+                            "Type <co>print(\"Hello, world!\", true)</c> to create a \"silent log\" which only appears in the debug console and doesn't show a notification.",
                         };
 
-                        std::string tip = geode::utils::random::choice(tips);
+                        static size_t currentTipIndex = 0;
+
+                        std::string tip = tips[currentTipIndex];
+                        
                         FLAlertLayer::create(
-                            "Random Tip",
-                            tip.c_str(),
+                            fmt::format("Tip {}/{}", currentTipIndex + 1, tips.size()).c_str(),
+                            tip,
                             "OK"
                         )->show();
+
+                        currentTipIndex = (currentTipIndex + 1) % tips.size();
                     }
                 );
 
