@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.0-alpha.9
+
+- Switched to Geode functions for file-related stuff
+
 ## v1.0.0-alpha.8
 
 - Added infinite loop and timeout protection

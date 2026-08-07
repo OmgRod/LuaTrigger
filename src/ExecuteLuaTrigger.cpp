@@ -175,7 +175,7 @@ PopupOptions ExecuteLuaTrigger::getEditObjectConfig(const Selected& selected) {
                 std::string code = result.unwrap();
 
                 gd::string encoded = LevelTools::base64EncodeString(gd::string(code.c_str(), code.size()));
-                std::string filename = path.filename().string();
+                std::string filename = utils::string::pathToString(path.filename());
 
                 for (auto* obj : selected) {
                     if (auto* trig = cast::typeinfo_cast<ExecuteLuaTrigger*>(obj)) {
