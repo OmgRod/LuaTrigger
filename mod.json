@@ -38,5 +38,23 @@
 		"homepage": "https://gdresources.omgrod.me/lua/index",
 		"source": "https://github.com/OmgRod/LuaTrigger"
 	},
-	"tags": ["editor", "enhancement", "gameplay", "offline", "universal", "utility"]
+	"tags": ["editor", "enhancement", "gameplay", "offline", "universal", "utility"],
+	"settings": {
+		"keybinds-title": {
+			"name": "Keybinds",
+			"type": "title"
+		},
+		"debug-console": {
+			"type": "keybind",
+			"name": "Toggle Debug Console",
+			"default": "Shift+T",
+			"category": "editor"
+		},
+		"clear-console": {
+			"type": "keybind",
+			"name": "Clear Console",
+			"default": "Ctrl+K",
+			"category": "editor"
+		}
+	}
 }

@@ -4,8 +4,8 @@
 
 class LuaObject {
 public:
-    GJBaseGameLayer* layer = nullptr;
-    GameObject* object = nullptr;
+    GJBaseGameLayer* layer;
+    GameObject* object;
     int objectID = 0;
     float x = 0;
     float y = 0;

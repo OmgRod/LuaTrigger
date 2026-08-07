@@ -11,6 +11,7 @@ void scaleGroupWithEasing(GJBaseGameLayer* gameLayer, int targetGroupID, int cen
 void togglePlayerMovement(GJBaseGameLayer* layer, bool enabled);
 
 std::string formatLuaArgs(sol::variadic_args args);
+std::pair<std::string, bool> processLuaLogArgs(sol::variadic_args args);
 bool isKeyword(const std::string& word);
 bool isFunction(const std::string& word, const std::string& code, size_t pos);
 bool isClass(const std::string& word);

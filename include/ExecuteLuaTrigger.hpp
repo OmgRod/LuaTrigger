@@ -3,7 +3,6 @@
 #include <Geode/Geode.hpp>
 #include <smjs.object-collab/include/object_collab.hpp>
 #include <nodes/FileSelectNode.hpp>
-#include <nodes/FileValueMenu.hpp>
 #include <fryy_55.amber/include/amber.hpp>
 #include <miskaa.notif/src/includes/notif_api.hpp>
 #include <utils/Utils.hpp>

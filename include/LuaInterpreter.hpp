@@ -2,8 +2,9 @@
 
 #include <sol/sol.hpp>
 #include <Geode/Geode.hpp>
-#include <unordered_map>
-#include <memory>
+#include <utils/LogManager.hpp>
+
+using namespace geode::prelude;
 
 class LuaInterpreter {
 public:
@@ -38,7 +39,7 @@ private:
     std::shared_ptr<sol::state> m_lua;
     sol::table m_persistentState;
 
-    GJBaseGameLayer* m_layer = nullptr;
+    GJBaseGameLayer* m_layer;
     bool m_initialized = false;
 
     bool m_disabled = false;
@@ -78,7 +79,9 @@ std::optional<T> LuaInterpreter::evaluateExpression(const std::string& expressio
         return result.template get<T>();
     } else {
         sol::error err = result;
-        geode::log::error("[Lua Eval Error] {}", err.what());
+        std::string errMsg = fmt::format("Lua Eval Error: {}", err.what());
+        log::error("{}", errMsg);
+        LogManager::get().error(errMsg);
     }
 
     return std::nullopt;

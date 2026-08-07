@@ -10,7 +10,7 @@ struct ExampleScript : public CCObject, public TableViewCellDelegate {
     bool locked;
 };
 
-class ExamplesPopup : public geode::Popup {
+class ExamplesPopup : public Popup {
 protected:
     ExecuteLuaTrigger* m_trigger;
 

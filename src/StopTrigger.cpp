@@ -18,18 +18,16 @@ class $modify(MyGameLayer, GJBaseGameLayer) {
 
         for (auto* obj : CCArrayExt<CCObject*>(groupObjects)) {
             if (auto* luaTrigger = typeinfo_cast<ExecuteLuaTrigger*>(obj)) {
-                log::info("[StopTriggerHook] Control command {} received for group {}", static_cast<int>(command), groupID);
+                log::info("Control command {} received for group {}", static_cast<int>(command), groupID);
 
                 if (command == GJActionCommand::Stop) {
-                    log::info("[StopTriggerHook] Stopping LuaTrigger!");
+                    log::info("Stopping LuaTrigger!");
                     luaTrigger->stopLua();
-                } 
-                else if (command == GJActionCommand::Pause) {
-                    log::info("[StopTriggerHook] Pausing LuaTrigger!");
+                } else if (command == GJActionCommand::Pause) {
+                    log::info("Pausing LuaTrigger!");
                     luaTrigger->pauseLua();
-                } 
-                else if (command == GJActionCommand::Resume) {
-                    log::info("[StopTriggerHook] Resuming LuaTrigger!");
+                } else if (command == GJActionCommand::Resume) {
+                    log::info("Resuming LuaTrigger!");
                     luaTrigger->resumeLua();
                 }
             }

@@ -1,3 +1,4 @@
+#include "Geode/utils/random.hpp"
 #include <ExecuteLuaTrigger.hpp>
 #include <utils/Utils.hpp>
 #include <nodes/ExamplesPopup.hpp>
@@ -17,7 +18,7 @@ std::string ExecuteLuaTrigger::highlightSyntax(const std::string& code) {
 
     while (i < code.size()) {
         if (i + 1 < code.size() && code[i] == '-' && code[i + 1] == '-') {
-            result += "<c#808080>";
+            result += "<c-808080>";
             
             while (i < code.size() && code[i] != '\n' && code[i] != '\r') {
                 result += code[i];
@@ -30,7 +31,7 @@ std::string ExecuteLuaTrigger::highlightSyntax(const std::string& code) {
 
         if (code[i] == '"' || code[i] == '\'') {
             char quote = code[i];
-            result += fmt::format("<c#FFFACD>{}", quote);
+            result += fmt::format("<c-FFFACD>{}", quote);
             i++;
 
             while (i < code.size()) {
@@ -67,11 +68,11 @@ std::string ExecuteLuaTrigger::highlightSyntax(const std::string& code) {
             }
 
             if (isKeyword(word)) {
-                result += fmt::format("<c#ADD8E6>{}</c>", word);
+                result += fmt::format("<c-ADD8E6>{}</c>", word);
             } else if (isFunction(word, code, i)) {
-                result += fmt::format("<c#90EE90>{}</c>", word);
+                result += fmt::format("<c-90EE90>{}</c>", word);
             } else if (isClass(word)) {
-                result += fmt::format("<c#FFB6C1>{}</c>", word);
+                result += fmt::format("<c-FFB6C1>{}</c>", word);
             } else {
                 result += word;
             }
@@ -84,7 +85,7 @@ std::string ExecuteLuaTrigger::highlightSyntax(const std::string& code) {
                 num += code[i];
                 i++;
             }
-            result += fmt::format("<c#FFDAB9>{}</c>", num);
+            result += fmt::format("<c-FFDAB9>{}</c>", num);
             continue;
         }
 
@@ -99,9 +100,9 @@ PopupOptions ExecuteLuaTrigger::getEditObjectConfig(const Selected& selected) {
     std::string initialCode = "print(\"Upload a .lua file to see the preview here...\")";
     std::string initialFilename = "";
 
-    ExecuteLuaTrigger* triggerInstance = nullptr;
+    ExecuteLuaTrigger* triggerInstance;
     if (!selected.empty()) {
-        triggerInstance = geode::cast::typeinfo_cast<ExecuteLuaTrigger*>(selected[0]);
+        triggerInstance = typeinfo_cast<ExecuteLuaTrigger*>(selected[0]);
     }
 
     if (triggerInstance) {
@@ -153,23 +154,31 @@ PopupOptions ExecuteLuaTrigger::getEditObjectConfig(const Selected& selected) {
             }
 
             select->setOnFileSelected([selected, previewRef](std::filesystem::path const& path) {
-                auto result = FileValueMenu::create(path);
+                if (path.empty()) {
+                    FLAlertLayer::create("Error", "No file path has been set", "OK")->show();
+                    return;
+                }
+
+                auto result = utils::file::readString(path);
                 if (result.isErr()) {
                     FLAlertLayer::create(
                         "Error",
-                        fmt::format("Failed to read file: {}", result.unwrapErr()),
-                        "Ok"
+                        fmt::format("Failed to read {}: {}", 
+                            utils::string::pathToString(path),
+                            result.unwrapErr()
+                        ),
+                        "OK"
                     )->show();
                     return;
                 }
 
-                std::string code = result.unwrap().getContents();
+                std::string code = result.unwrap();
 
                 gd::string encoded = LevelTools::base64EncodeString(gd::string(code.c_str(), code.size()));
                 std::string filename = path.filename().string();
 
                 for (auto* obj : selected) {
-                    if (auto* trig = geode::cast::typeinfo_cast<ExecuteLuaTrigger*>(obj)) {
+                    if (auto* trig = cast::typeinfo_cast<ExecuteLuaTrigger*>(obj)) {
                         trig->m_b64code  = std::string(encoded.c_str(), encoded.size());
                         trig->m_filename = filename;
                         trig->checkMod();
@@ -193,9 +202,9 @@ PopupOptions ExecuteLuaTrigger::getEditObjectConfig(const Selected& selected) {
         .title("Execute Lua Code")
         .info(InfoPopup::builder()
             .title("Help")
-            .description("This trigger lets you execute <cg>sandboxed</c> <cl>Lua</c> code in GD, giving you loads of flexibility "
-                "in what you want your level to do.\n\nUpload your Lua files using the button at the bottom-left of "
-                "the trigger menu.\n\n<cy>For full trigger docs, click the \"Open Docs\" button</c> and <cd>for examples, click the \"View Examples\" button!</c>")
+            .description("Execute <cg>sandboxed Lua code</c> right inside GD to bring complex mechanics and endless flexibility to your levels!\n\n"
+                "Upload your files using the button in the bottom-left of the trigger popup.\n\n"
+                "Click <cy>\"Open Docs\"</c> for full documentation or <cd>\"View Examples\"</c> for sample scripts!")
             .build())
         .menu(std::move(luaEditor))
         .menu(editor_popup::CustomValueMenu::builder()
@@ -236,6 +245,25 @@ PopupOptions ExecuteLuaTrigger::getEditObjectConfig(const Selected& selected) {
                     }
                 );
 
+                auto tipOfTheDayBtn = CCMenuItemExt::createSpriteExtra(
+                    ButtonSprite::create("Random Tip", 180, true, "goldFont.fnt", "GJ_button_01.png", 26.f, 0.6f),
+                    [](CCObject*) {
+                        std::vector<std::string> tips = {
+                            "Use <cy>`state`</c> to use persistent variables, e.g. <cl>`state.value = 123`</c>.\nThe values of <cp>these variables will persist across attempts</c> (but will <cr>reset</c> once the level is <cf>exited</c>).",
+                            "Use <cy>`clearState()`</c> to clear all persistent variables.",
+                            "Use <cr>`Player.kill()`</c> to kill the player.",
+                            "Use <cg>`Popup.show()`</c> to show a GD popup.",
+                        };
+
+                        std::string tip = geode::utils::random::choice(tips);
+                        FLAlertLayer::create(
+                            "Random Tip",
+                            tip.c_str(),
+                            "OK"
+                        )->show();
+                    }
+                );
+
                 auto menu = CCMenu::create();
                 menu->setContentSize({ 300.f, 150.f });
 
@@ -243,6 +271,7 @@ PopupOptions ExecuteLuaTrigger::getEditObjectConfig(const Selected& selected) {
                 menu->addChild(bugBtn);
                 menu->addChild(featureBtn);
                 menu->addChild(examplesBtn);
+                menu->addChild(tipOfTheDayBtn);
                 menu->setLayout(
                     AxisLayout::create(Axis::Column)
                         ->setGap(5.0f)
@@ -257,10 +286,10 @@ PopupOptions ExecuteLuaTrigger::getEditObjectConfig(const Selected& selected) {
         .menu(ToggleMenu::builder()
             .id("ignore-timeout")
             .title("Ignore Timeout")
-            .onValue([selected](bool value, const Selected& sel, geode::Popup*) {
+            .onValue([selected](bool value, const Selected& sel, Popup*) {
                 applyValueToSelected(sel, &ExecuteLuaTrigger::m_ignoreTimeout, value);
             })
-            .currentValue([selected](const Selected& sel, geode::Popup*) -> bool {
+            .currentValue([selected](const Selected& sel, Popup*) -> bool {
                 return getCommonValueOrDefault(sel, &ExecuteLuaTrigger::m_ignoreTimeout);
             })
             .build())

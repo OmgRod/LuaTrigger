@@ -11,9 +11,9 @@ ConditionLuaTrigger* ConditionLuaTrigger::create(ObjectInfo* info) {
 }
 
 PopupOptions ConditionLuaTrigger::getEditObjectConfig(const Selected& selected) {
-    ConditionLuaTrigger* trig = nullptr;
+    ConditionLuaTrigger* trig;
     if (!selected.empty()) {
-        trig = geode::cast::typeinfo_cast<ConditionLuaTrigger*>(selected[0]);
+        trig = typeinfo_cast<ConditionLuaTrigger*>(selected[0]);
     }
 
     return PopupConfig::builder()
@@ -37,10 +37,10 @@ PopupOptions ConditionLuaTrigger::getEditObjectConfig(const Selected& selected) 
             .precision(0)
             .stepSize(1)
             .min(0)
-            .onValue([selected](float value, const Selected& sel, geode::Popup*) {
+            .onValue([selected](float value, const Selected& sel, Popup*) {
                 applyValueToSelected(sel, &ConditionLuaTrigger::m_trueGroup, static_cast<int>(value));
             })
-            .currentValue([selected](const Selected& sel, geode::Popup*) -> float {
+            .currentValue([selected](const Selected& sel, Popup*) -> float {
                 return static_cast<float>(getCommonValueOrDefault(sel, &ConditionLuaTrigger::m_trueGroup));
             })
             .build())
@@ -51,10 +51,10 @@ PopupOptions ConditionLuaTrigger::getEditObjectConfig(const Selected& selected) 
             .precision(0)
             .stepSize(1)
             .min(0)
-            .onValue([selected](float value, const Selected& sel, geode::Popup*) {
+            .onValue([selected](float value, const Selected& sel, Popup*) {
                 applyValueToSelected(sel, &ConditionLuaTrigger::m_falseGroup, static_cast<int>(value));
             })
-            .currentValue([selected](const Selected& sel, geode::Popup*) -> float {
+            .currentValue([selected](const Selected& sel, Popup*) -> float {
                 return static_cast<float>(getCommonValueOrDefault(sel, &ConditionLuaTrigger::m_falseGroup));
             })
             .build())
@@ -68,18 +68,18 @@ PopupOptions ConditionLuaTrigger::getEditObjectConfig(const Selected& selected) 
                 "0123456789"
                 " .,;:!?\"'+-*/=<>()[]{}#@%^&|~_\\"
             )
-            .onValue([selected](const std::string& value, const Selected& sel, geode::Popup*) {
+            .onValue([selected](const std::string& value, const Selected& sel, Popup*) {
                 gd::string encoded = LevelTools::base64EncodeString(gd::string(value.c_str(), value.size()));
                 std::string enc(encoded.c_str(), encoded.size());
                 applyValueToSelected(sel, &ConditionLuaTrigger::m_b64code, enc);
                 
                 for (auto* obj : selected) {
-                    if (auto* t = geode::cast::typeinfo_cast<ConditionLuaTrigger*>(obj)) {
+                    if (auto* t = cast::typeinfo_cast<ConditionLuaTrigger*>(obj)) {
                         t->checkMod();
                     }
                 }
             })
-            .currentValue([selected](const Selected& sel, geode::Popup*) -> std::string {
+            .currentValue([selected](const Selected& sel, Popup*) -> std::string {
                 std::string enc = getCommonValueOrDefault(sel, &ConditionLuaTrigger::m_b64code);
                 if (enc.empty()) return "";
                 return std::string(LevelTools::base64DecodeString(enc).c_str());
@@ -88,10 +88,10 @@ PopupOptions ConditionLuaTrigger::getEditObjectConfig(const Selected& selected) 
         .menu(ToggleMenu::builder()
             .id("ignore-timeout")
             .title("Ignore Timeout")
-            .onValue([selected](bool value, const Selected& sel, geode::Popup*) {
+            .onValue([selected](bool value, const Selected& sel, Popup*) {
                 applyValueToSelected(sel, &ConditionLuaTrigger::m_ignoreTimeout, value);
             })
-            .currentValue([selected](const Selected& sel, geode::Popup*) -> bool {
+            .currentValue([selected](const Selected& sel, Popup*) -> bool {
                 return getCommonValueOrDefault(sel, &ConditionLuaTrigger::m_ignoreTimeout);
             })
             .build())

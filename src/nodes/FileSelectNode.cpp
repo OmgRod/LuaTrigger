@@ -47,7 +47,7 @@ void FileSelectNode::updateState() {
         m_nameLabel->setColor(ccGRAY);
         m_nameLabel->setOpacity(180);
     } else {
-        m_nameLabel->setString(geode::utils::string::pathToString(m_path.filename()).c_str());
+        m_nameLabel->setString(utils::string::pathToString(m_path.filename()).c_str());
         m_nameLabel->setColor(ccWHITE);
         m_nameLabel->setOpacity(255);
     }
@@ -76,7 +76,7 @@ void FileSelectNode::onPickFile(CCObject*) {
                 FLAlertLayer::create(
                     "Failed",
                     fmt::format("Failed to pick file: {}", path.unwrapErr()),
-                    "Ok"
+                    "OK"
                 )->show();
             }
         }

@@ -2,8 +2,7 @@
 #include <Geode/Geode.hpp>
 #include <miskaa.notif/src/includes/notif_api.hpp>
 #include <utils/Utils.hpp>
-
-using namespace geode::prelude;
+#include <utils/LogManager.hpp>
 
 std::unordered_map<GJBaseGameLayer*, std::shared_ptr<LuaInterpreter>> LuaInterpreter::s_registry;
 
@@ -32,7 +31,8 @@ LuaInterpreter::LuaInterpreter() {
 void LuaInterpreter::init(GJBaseGameLayer* layer) {
     if (m_initialized) return;
 
-    m_lua->open_libraries(
+    m_layer = layer;
+    m_lua->open_libraries( // DO NOT USE UNSAFE LIBS
         sol::lib::base,
         sol::lib::math,
         sol::lib::string,
@@ -51,21 +51,27 @@ void LuaInterpreter::init(GJBaseGameLayer* layer) {
     });
 
     m_lua->set_function("print", [](sol::variadic_args args) {
-        auto text = formatLuaArgs(args);
-        log::info("[Lua] {}", text);
-        notifapi::info(text);
+        auto [text, isSilent] = processLuaLogArgs(args);
+        LogManager::get().info(text);
+        if (!isSilent) {
+            notifapi::info(text);
+        }
     });
 
     m_lua->set_function("error", [](sol::variadic_args args) {
-        auto text = formatLuaArgs(args);
-        log::error("[Lua] {}", text);
-        notifapi::error(text);
+        auto [text, isSilent] = processLuaLogArgs(args);
+        LogManager::get().error(text);
+        if (!isSilent) {
+            notifapi::error(text);
+        }
     });
 
     m_lua->set_function("warn", [](sol::variadic_args args) {
-        auto text = formatLuaArgs(args);
-        log::warn("[Lua] {}", text);
-        notifapi::warn(text);
+        auto [text, isSilent] = processLuaLogArgs(args);
+        LogManager::get().warn(text);
+        if (!isSilent) {
+            notifapi::warn(text);
+        }
     });
 
     m_lua->set_function("clearState", [this]() {
@@ -121,8 +127,10 @@ void LuaInterpreter::runCoroutine(std::shared_ptr<sol::coroutine> coroutine, sol
 
     if (!result.valid()) {
         sol::error err = result;
+        std::string errMsg = fmt::format("Lua Error: {}", err.what());
         log::error("Lua Coroutine Error: {}", err.what());
-        notifapi::error(fmt::format("Lua Error: {}", err.what()));
+        LogManager::get().error(errMsg);
+        notifapi::error(errMsg);
         return;
     }
 
@@ -165,7 +173,9 @@ bool LuaInterpreter::runString(const std::string& code, bool ignoreTimeout) {
     sol::load_result loaded = m_lua->load(code);
     if (!loaded.valid()) {
         sol::error err = loaded;
-        log::error("Lua Load Error: {}", err.what());
+        std::string errMsg = fmt::format("Lua Load Error: {}", err.what());
+        log::error("{}", errMsg);
+        LogManager::get().error(errMsg);
         return false;
     }
 
@@ -599,7 +609,9 @@ void LuaInterpreter::bindEngineAPI(GJBaseGameLayer* layer) {
 
                 if (!result.valid()) {
                     sol::error err = result;
-                    log::error("Lua popup callback error: {}", err.what());
+                    std::string errMsg = fmt::format("Lua popup callback error: {}", err.what());
+                    log::error("{}", errMsg);
+                    LogManager::get().error(errMsg);
                 }
             };
 

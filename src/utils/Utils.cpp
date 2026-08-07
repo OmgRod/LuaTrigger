@@ -118,6 +118,45 @@ std::string formatLuaArgs(sol::variadic_args args) {
     return result;
 }
 
+std::pair<std::string, bool> processLuaLogArgs(sol::variadic_args args) {
+    bool isSilent = false;
+    size_t count = args.size();
+
+    if (count > 0) {
+        auto lastArg = args[count - 1];
+        if (lastArg.get_type() == sol::type::boolean) {
+            isSilent = lastArg.as<bool>();
+            if (isSilent) {
+                count--;
+            }
+        }
+    }
+
+    std::string result;
+    for (size_t i = 0; i < count; ++i) {
+        auto arg = args[i];
+        switch (arg.get_type()) {
+            case sol::type::string:
+                result += arg.as<std::string>();
+                break;
+            case sol::type::number:
+                result += std::to_string(arg.as<double>());
+                break;
+            case sol::type::boolean:
+                result += arg.as<bool>() ? "true" : "false";
+                break;
+            case sol::type::lua_nil:
+                result += "nil";
+                break;
+            default:
+                result += "<" + std::string(sol::type_name(args.lua_state(), arg.get_type())) + ">";
+                break;
+        }
+        result += "\t";
+    }
+    return {result, isSilent};
+}
+
 bool isKeyword(const std::string& word) {
     static const std::unordered_set<std::string> keywords = {
         "and", "break", "do", "else", "elseif", "end", "false", "for", "function", 

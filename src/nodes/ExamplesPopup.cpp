@@ -7,7 +7,7 @@ bool ExamplesPopup::init(ExecuteLuaTrigger* trigger, std::function<void(const st
     this->m_trigger = trigger;
     this->setTitle("Example Scripts");
 
-    auto res = geode::utils::file::readJson(Mod::get()->getResourcesDir() / "examples" / "meta.json");
+    auto res = utils::file::readJson(Mod::get()->getResourcesDir() / "examples" / "meta.json");
     if (!res) {
         log::error("Failed to read examples meta.json: {}", res.unwrapErr());
         return false;
@@ -115,7 +115,7 @@ bool ExampleCell::init(ExecuteLuaTrigger* trigger, ExamplesPopup* popup, Example
     }
     this->addChild(descLabel);
 
-    ButtonSprite* btnSpr = nullptr;
+    ButtonSprite* btnSpr;
     if (script->locked) {
         btnSpr = ButtonSprite::create("Locked", 40, true, "goldFont.fnt", "GJ_button_02.png", 20.f, 0.45f);
     } else {
@@ -134,7 +134,7 @@ bool ExampleCell::init(ExecuteLuaTrigger* trigger, ExamplesPopup* popup, Example
                 return;
             }
 
-            auto res = geode::utils::file::readString(Mod::get()->getResourcesDir() / "examples" / script->filename);
+            auto res = utils::file::readString(Mod::get()->getResourcesDir() / "examples" / script->filename);
             if (!res) {
                 FLAlertLayer::create(
                     "Error",

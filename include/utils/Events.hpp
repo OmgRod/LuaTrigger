@@ -4,7 +4,7 @@
 
 using namespace geode::prelude;
 
-class LevelResetEvent : public geode::Event<LevelResetEvent, bool()> {
+class LevelResetEvent : public Event<LevelResetEvent, bool()> {
 public:
     using Event::Event;
 };
