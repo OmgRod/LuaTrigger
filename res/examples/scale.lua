@@ -1,4 +1,4 @@
--- scale group 2 object
+-- scale group 2 object relative to group 1 object
 
 while true do
     Object.scale(2, 1, 1.0, 1.0, 0.25)

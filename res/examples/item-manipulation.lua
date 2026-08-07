@@ -1,16 +1,13 @@
--- Item manipulation example using LuaTrigger
-
--- Get current value of Item ID 1
+-- assuming coins are item 1
 local currentCoins = Item.get(Item.item, 1)
 print("Current coins (Item 1): " .. tostring(currentCoins))
 
--- Set Item ID 1 to 50
 Item.set(1, 50)
 
 local newCoins = Item.get(Item.item, 1)
 print("New coins (Item 1): " .. tostring(newCoins))
 
--- Get value of Timer ID 1 and Points
+-- timer & points example
 local timerVal = Item.get(Item.timer, 1)
 local pointsVal = Item.get(Item.points)
 

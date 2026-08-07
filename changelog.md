@@ -4,9 +4,10 @@
 
 - Added infinite loop and timeout protection
 - From above change, added "Ignore Timeout" toggle in both triggers
-- Add `spawn()` function
+- Add `Object.spawn()` function
 - Refactored the code again
 - Added in-game logs (for better debugging)
+- Improved the examples
 
 ## v1.0.0-alpha.7
 

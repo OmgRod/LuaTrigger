@@ -744,6 +744,16 @@ void LuaInterpreter::bindEngineAPI(GJBaseGameLayer* layer) {
         scaleGroupWithEasing(layer, targetGroupID, centerGroupID, scaleX, sy, dur, easingType.value_or(0), easingRate.value_or(2.0f), divByX, divByY, onlyMove, relativeScale, relativeRotation);
     };
 
+    groupTable["spawn"] = [layer](int targetGroupID, sol::optional<float> delay) {
+        if (!layer) return;
+
+        auto spawnTrigger = SpawnTriggerGameObject::create();
+        spawnTrigger->m_targetGroupID = targetGroupID;
+        spawnTrigger->m_spawnDelay = delay.value_or(0);
+
+        spawnTrigger->triggerObject(layer, -1, nullptr);
+    };
+
     sol::table itemTable = m_lua->create_named_table("Item",
         "item", 1,
         "timer", 2,
