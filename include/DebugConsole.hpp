@@ -10,11 +10,12 @@ class DebugConsole : public CCLayer {
 
 private:
     amber::ScrollTextArea* m_textArea;
+    
+    bool init() override;
+    
+public:
     static DebugConsole* instance;
 
-    bool init() override;
-
-public:
     static DebugConsole* get();
     static DebugConsole* create();
 

@@ -1,6 +1,8 @@
 #include <utils/Utils.hpp>
 
-void moveGroupWithEasing(GJBaseGameLayer* gameLayer, int targetGroupID, cocos2d::CCPoint offset, float duration, int easingType, float easingRate) {
+// ts literally has to work like this. its the best way i could find to be able to do this
+
+void moveGroupWithEasing(GJBaseGameLayer* gameLayer, int targetGroupID, CCPoint offset, float duration, int easingType, float easingRate) {
     if (!gameLayer) return;
 
     auto moveTrigger = static_cast<EffectGameObject*>(GameObject::createWithKey(901));

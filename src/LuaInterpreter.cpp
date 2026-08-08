@@ -6,6 +6,7 @@
 
 std::unordered_map<GJBaseGameLayer*, std::shared_ptr<LuaInterpreter>> LuaInterpreter::s_registry;
 
+// this is one per layer
 std::shared_ptr<LuaInterpreter> LuaInterpreter::forLayer(GJBaseGameLayer* layer) {
     if (!layer) return nullptr;
 
@@ -87,6 +88,7 @@ void LuaInterpreter::init(GJBaseGameLayer* layer) {
     m_initialized = true;
 }
 
+// sets up persistent state and that stuff
 sol::environment LuaInterpreter::createScriptEnvironment() {
     sol::environment env(*m_lua, sol::create);
 
@@ -100,9 +102,7 @@ sol::environment LuaInterpreter::createScriptEnvironment() {
 }
 
 void LuaInterpreter::runCoroutine(std::shared_ptr<sol::coroutine> coroutine, sol::environment env, uint32_t token, bool ignoreTimeout) {
-    if (m_disabled || !m_lua || !coroutine->runnable() || token != m_executionToken) {
-        return;
-    }
+    if (m_disabled || !m_lua || !coroutine->runnable() || token != m_executionToken) return;
 
     lua_State* L = coroutine->lua_state();
     if (L && !ignoreTimeout) {
@@ -139,16 +139,16 @@ void LuaInterpreter::runCoroutine(std::shared_ptr<sol::coroutine> coroutine, sol
     if (result.return_count() > 0) {
         float seconds = result.get<float>(0);
 
-        cocos2d::CCNode* targetNode = PlayLayer::get();
+        CCNode* targetNode = PlayLayer::get();
         if (!targetNode) {
-            targetNode = cocos2d::CCDirector::sharedDirector()->getRunningScene();
+            targetNode = CCDirector::sharedDirector()->getRunningScene();
         }
 
         if (!targetNode) return;
 
         targetNode->runAction(
-            cocos2d::CCSequence::create(
-                cocos2d::CCDelayTime::create(seconds),
+            CCSequence::create(
+                CCDelayTime::create(seconds),
                 CallFuncExt::create(
                     [this, coroutine, env, token, ignoreTimeout]() mutable {
                         if (m_disabled || !m_lua || token != m_executionToken) {
@@ -237,60 +237,6 @@ void LuaInterpreter::bindEngineAPI(GJBaseGameLayer* layer) {
         if (auto* p = getPlayer(type)) p->flipGravity(!p->m_isUpsideDown, !fx);
     };
 
-    playerTable["setGravity"] = [getPlayer](sol::optional<int> playerType, bool upsideDown, sol::optional<bool> noEffects) {
-        int type = playerType.value_or(1);
-        bool fx = !noEffects.value_or(false);
-        if (auto* p = getPlayer(type)) p->flipGravity(upsideDown, !fx);
-    };
-
-    playerTable["setYVelocity"] = [getPlayer](sol::optional<int> playerType, double velocity) {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) p->setYVelocity(velocity, 1);
-    };
-
-    playerTable["addYVelocity"] = [getPlayer](sol::optional<int> playerType, double yVelocity) {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) p->addToYVelocity(yVelocity, 1);
-    };
-
-    playerTable["setVisible"] = [getPlayer](sol::optional<int> playerType, bool visible) {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) p->toggleVisibility(visible);
-    };
-
-    playerTable["enableControls"] = [getPlayer](sol::optional<int> playerType) {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) p->enablePlayerControls();
-    };
-
-    playerTable["disableControls"] = [getPlayer](sol::optional<int> playerType) {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) p->disablePlayerControls();
-    };
-
-    playerTable["setSpeed"] = [getPlayer](sol::optional<int> playerType, bool faster) {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) {
-            if (faster) p->speedUp();
-            else p->speedDown();
-        }
-    };
-
-    playerTable["gravityUp"] = [getPlayer](sol::optional<int> playerType) {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) p->gravityUp();
-    };
-
-    playerTable["gravityDown"] = [getPlayer](sol::optional<int> playerType) {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) p->gravityDown();
-    };
-
-    playerTable["boostPlayer"] = [getPlayer](sol::optional<int> playerType, float yVelocity) {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) p->boostPlayer(yVelocity);
-    };
-
     playerTable["getX"] = [getPlayer](sol::optional<int> playerType) -> float {
         int type = playerType.value_or(1);
         if (auto* p = getPlayer(type)) return p->getPositionX();
@@ -319,269 +265,6 @@ void LuaInterpreter::bindEngineAPI(GJBaseGameLayer* layer) {
         int type = playerType.value_or(1);
         if (auto* p = getPlayer(type)) return p->getCurrentXVelocity();
         return 0.0;
-    };
-
-    playerTable["getRotation"] = [getPlayer](sol::optional<int> playerType) -> float {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->getRotation();
-        return 0.f;
-    };
-
-    playerTable["getScale"] = [getPlayer](sol::optional<int> playerType) -> float {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->getScale();
-        return 1.f;
-    };
-
-    playerTable["getGravity"] = [getPlayer](sol::optional<int> playerType) -> double {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_gravity;
-        return 0.0;
-    };
-
-    playerTable["getSpeedMultiplier"] = [getPlayer](sol::optional<int> playerType) -> double {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_speedMultiplier;
-        return 1.0;
-    };
-
-    playerTable["getTotalTime"] = [getPlayer](sol::optional<int> playerType) -> double {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_totalTime;
-        return 0.0;
-    };
-
-    playerTable["isDead"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isDead;
-        return false;
-    };
-
-    playerTable["isUpsideDown"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isUpsideDown;
-        return false;
-    };
-
-    playerTable["isOnGround"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isOnGround;
-        return false;
-    };
-
-    playerTable["isGoingLeft"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isGoingLeft;
-        return false;
-    };
-
-    playerTable["isSideways"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isSideways;
-        return false;
-    };
-
-    playerTable["isDashing"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isDashing;
-        return false;
-    };
-
-    playerTable["isMoving"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isMoving;
-        return false;
-    };
-
-    playerTable["isFlying"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->isFlying();
-        return false;
-    };
-
-    playerTable["isLocked"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isLocked;
-        return false;
-    };
-
-    playerTable["hasEverJumped"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_hasEverJumped;
-        return false;
-    };
-
-    playerTable["isPlatformer"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isPlatformer;
-        return false;
-    };
-
-    playerTable["isOnSlope"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isOnSlope;
-        return false;
-    };
-
-    playerTable["isSliding"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isSliding;
-        return false;
-    };
-
-    playerTable["isAccelerating"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isAccelerating;
-        return false;
-    };
-
-    playerTable["isHidden"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isHidden;
-        return false;
-    };
-
-    playerTable["hasGlow"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_hasGlow;
-        return false;
-    };
-
-    playerTable["isSwing"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isSwing;
-        return false;
-    };
-
-    playerTable["isShip"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isShip;
-        return false;
-    };
-
-    playerTable["isBird"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isBird;
-        return false;
-    };
-
-    playerTable["isBall"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isBall;
-        return false;
-    };
-
-    playerTable["isDart"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isDart;
-        return false;
-    };
-
-    playerTable["isRobot"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isRobot;
-        return false;
-    };
-
-    playerTable["isSpider"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isSpider;
-        return false;
-    };
-
-    playerTable["isCube"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type))
-            return !p->m_isShip && !p->m_isBird && !p->m_isBall && !p->m_isDart
-                && !p->m_isRobot && !p->m_isSpider && !p->m_isSwing;
-        return false;
-    };
-
-    playerTable["getMode"] = [getPlayer](sol::optional<int> playerType) -> std::string {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) {
-            if (p->m_isShip)   return "ship";
-            if (p->m_isBird)   return "ufo";
-            if (p->m_isBall)   return "ball";
-            if (p->m_isDart)   return "wave";
-            if (p->m_isRobot)  return "robot";
-            if (p->m_isSpider) return "spider";
-            if (p->m_isSwing)  return "swing";
-            return "cube";
-        }
-        return "unknown";
-    };
-
-    playerTable["isHoldingLeft"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_holdingLeft;
-        return false;
-    };
-
-    playerTable["isHoldingRight"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_holdingRight;
-        return false;
-    };
-
-    playerTable["getPlatformerXVelocity"] = [getPlayer](sol::optional<int> playerType) -> double {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_platformerXVelocity;
-        return 0.0;
-    };
-
-    playerTable["isSecondPlayer"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isSecondPlayer;
-        return false;
-    };
-
-    playerTable["isOutOfBounds"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_isOutOfBounds;
-        return false;
-    };
-
-    playerTable["getVehicleSize"] = [getPlayer](sol::optional<int> playerType) -> float {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_vehicleSize;
-        return 1.f;
-    };
-
-    playerTable["getPlayerSpeed"] = [getPlayer](sol::optional<int> playerType) -> float {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_playerSpeed;
-        return 0.f;
-    };
-
-    playerTable["getLastPortalPos"] = [getPlayer](sol::optional<int> playerType) -> std::tuple<float, float> {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return { p->m_lastPortalPos.x, p->m_lastPortalPos.y };
-        return { 0.f, 0.f };
-    };
-
-    playerTable["getLastGroundedPos"] = [getPlayer](sol::optional<int> playerType) -> std::tuple<float, float> {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return { p->m_lastGroundedPos.x, p->m_lastGroundedPos.y };
-        return { 0.f, 0.f };
-    };
-
-    playerTable["getGravityMod"] = [getPlayer](sol::optional<int> playerType) -> float {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_gravityMod;
-        return 1.f;
-    };
-
-    playerTable["hasTouchedRing"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_touchedRing;
-        return false;
-    };
-
-    playerTable["hasTouchedPad"] = [getPlayer](sol::optional<int> playerType) -> bool {
-        int type = playerType.value_or(1);
-        if (auto* p = getPlayer(type)) return p->m_touchedPad;
-        return false;
     };
 
     sol::table popupTable = m_lua->create_named_table("Popup");

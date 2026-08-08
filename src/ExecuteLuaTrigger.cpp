@@ -246,7 +246,7 @@ PopupOptions ExecuteLuaTrigger::getEditObjectConfig(const Selected& selected) {
                 );
 
                 auto tipOfTheDayBtn = CCMenuItemExt::createSpriteExtra(
-                    ButtonSprite::create("Useful Tips"),
+                    ButtonSprite::create("Useful Tips", 180, true, "goldFont.fnt", "GJ_button_01.png", 26.f, 0.6f),
                     [](CCObject*) {
                         static std::vector<std::string> tips = {
                             "Use <cy>state</c> to use persistent variables, e.g. <cl>`state.value = 123`</c>.\nThe values of <cp>these variables will persist across attempts</c> (but will <cr>reset</c> once the level is <cf>exited</c>).",

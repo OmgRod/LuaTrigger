@@ -62,7 +62,7 @@ PopupOptions ConditionLuaTrigger::getEditObjectConfig(const Selected& selected) 
             .id("condition-expr")
             .title("Condition Expression")
             .placeholder("e.g. state.score > 100")
-            .allowedChars(
+            .allowedChars( // genuinely this didnt let me type stuff without it
                 "abcdefghijklmnopqrstuvwxyz"
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 "0123456789"

@@ -48,6 +48,7 @@ private:
     static std::unordered_map<GJBaseGameLayer*, std::shared_ptr<LuaInterpreter>> s_registry;
 };
 
+// welcome to sol
 template <typename T>
 std::optional<T> LuaInterpreter::evaluateExpression(const std::string& expression, bool ignoreTimeout) {
     if (!m_lua) return std::nullopt;

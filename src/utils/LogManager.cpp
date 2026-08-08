@@ -1,5 +1,6 @@
 #include "utils/LogManager.hpp"
 
+// i would've used fmt time stuff here but my compiler hates me
 std::string LogManager::getCurrentTimeString() const {
     auto now = std::chrono::system_clock::now();
     auto in_time_t = std::chrono::system_clock::to_time_t(now);

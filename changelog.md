@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.0-alpha.10
+
+- There you go I unvibecoded it as much as possible now I would like to be given the recognition I deserve for coding mods for you guys completely voluntarily for 2 years.
+
 ## v1.0.0-alpha.9
 
 - Switched to Geode functions for file-related stuff

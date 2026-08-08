@@ -16,12 +16,12 @@ $on_game(Loaded) {
             auto om = OverlayManager::get();
             if (!om) return;
             
-            if (auto existingConsole = DebugConsole::get()) {
-                existingConsole->removeFromParent();
+            if (auto existing = DebugConsole::get()) {
+                existing->removeFromParent();
             } else {
-                auto newConsole = DebugConsole::create();
-                if (newConsole) {
-                    om->addChild(newConsole);
+                auto newc = DebugConsole::create();
+                if (newc) {
+                    om->addChild(newc);
                 }
             }
         }
